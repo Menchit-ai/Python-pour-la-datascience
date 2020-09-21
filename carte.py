@@ -1,8 +1,5 @@
-
-
-
-
-
+import pandas as pd
+import numpy as np
 
 
 #function to convert to alpha2 country codes and continents
@@ -32,22 +29,39 @@ def geolocate(country):
         # Return missing value
         return np.nan
 
-# Create a world map to show distributions of users 
-import folium
-from folium.plugins import MarkerCluster
-#empty map
-world_map= folium.Map(tiles="cartodbpositron")
-marker_cluster = MarkerCluster().add_to(world_map)
-#for each coordinate, create circlemarker of user percent
-for i in range(len(df)):
-        lat = df.iloc[i]['Latitude']
-        longit = df.iloc[i]['Longitude']
-        radius=5
-        popup_text = """Country : {}<br>
-                    %of Users : {}<br>"""
-        popup_text = popup_text.format(df.iloc[i]['Country'],
-                                   df.iloc[i]['User_Percent']
-                                   )
-        folium.CircleMarker(location = [lat, longit], radius=radius, popup= popup_text, fill =True).add_to(marker_cluster)
-#show the map
-world_map
+
+
+
+data = pd.read_csv("abo.csv",delimiter=',')
+country = data["Pays"]
+print(type(country))
+print(geolocate(country))
+
+
+
+
+
+
+
+
+
+
+# # Create a world map to show distributions of users 
+# import folium
+# from folium.plugins import MarkerCluster
+# #empty map
+# world_map= folium.Map(tiles="cartodbpositron")
+# marker_cluster = MarkerCluster().add_to(world_map)
+# #for each coordinate, create circlemarker of user percent
+# for i in range(len(df)):
+#         lat = df.iloc[i]['Latitude']
+#         longit = df.iloc[i]['Longitude']
+#         radius=5
+#         popup_text = """Country : {}<br>
+#                     %of Users : {}<br>"""
+#         popup_text = popup_text.format(df.iloc[i]['Country'],
+#                                    df.iloc[i]['User_Percent']
+#                                    )
+#         folium.CircleMarker(location = [lat, longit], radius=radius, popup= popup_text, fill =True).add_to(marker_cluster)
+# #show the map
+# world_map
