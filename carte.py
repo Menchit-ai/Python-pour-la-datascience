@@ -1,19 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from googletrans import Translator
-
 import pycountry
-
-#function to translate French coutry name to English name
-def translate_to_english(word):
-    translator = Translator()
-    try:
-        res = translator.translate(word)
-        res = res.text
-    except:
-        res = None
-    return res
 
 #function to convert to alpha2 country codes and continents
 from pycountry_convert import country_alpha2_to_continent_code, country_name_to_country_alpha2
