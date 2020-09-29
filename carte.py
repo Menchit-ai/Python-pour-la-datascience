@@ -1,6 +1,19 @@
 import pandas as pd
 import numpy as np
 
+from googletrans import Translator
+
+import pycountry
+
+#function to translate French coutry name to English name
+def translate_to_english(word):
+    translator = Translator()
+    try:
+        res = translator.translate(word)
+        res = res.text
+    except:
+        res = None
+    return res
 
 #function to convert to alpha2 country codes and continents
 from pycountry_convert import country_alpha2_to_continent_code, country_name_to_country_alpha2
@@ -34,10 +47,27 @@ def geolocate(country):
 
 data = pd.read_csv("abo.csv",delimiter=',')
 country = data["Pays"]
-print(type(country))
-print(geolocate(country))
 
+input_countries = country.unique()
+li = []
+for i in input_countries:
+    li.append(translate_to_english(i))
 
+countries = {}
+for country in pycountry.countries:
+    countries[country.name] = country.alpha_2
+
+codes = [countries.get(country, 'Unknown code') for country in li]
+
+print(codes)  # prints ['AS', 'CA', 'FR']
+quit()
+
+ad = len(country)
+for i in range(len(country)):
+    data["EnglishCountry"] = translate_to_english(country[i])
+    print(i/ad)
+
+print(data.head(40))
 
 
 
