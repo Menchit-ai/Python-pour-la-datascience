@@ -48,56 +48,6 @@ def geolocate(country):
 data = pd.read_csv("abo.csv",delimiter=',')
 coord = pd.read_csv("world_coord.csv",delimiter=',', encoding='latin1')
 country = data["Pays"]
-<<<<<<< HEAD
-
-input_countries = country.unique()
-li = []
-for i in input_countries:
-    li.append(translate_to_english(i))
-
-countries = {}
-for country in pycountry.countries:
-    countries[country.name] = country.alpha_2
-
-codes = [countries.get(country, 'Unknown code') for country in li]
-
-print(codes)  # prints ['AS', 'CA', 'FR']
-quit()
-
-ad = len(country)
-for i in range(len(country)):
-    data["EnglishCountry"] = translate_to_english(country[i])
-    print(i/ad)
-
-print(data.head(40))
-
-
-
-
-
-
-
-
-# # Create a world map to show distributions of users 
-# import folium
-# from folium.plugins import MarkerCluster
-# #empty map
-# world_map= folium.Map(tiles="cartodbpositron")
-# marker_cluster = MarkerCluster().add_to(world_map)
-# #for each coordinate, create circlemarker of user percent
-# for i in range(len(df)):
-#         lat = df.iloc[i]['Latitude']
-#         longit = df.iloc[i]['Longitude']
-#         radius=5
-#         popup_text = """Country : {}<br>
-#                     %of Users : {}<br>"""
-#         popup_text = popup_text.format(df.iloc[i]['Country'],
-#                                    df.iloc[i]['User_Percent']
-#                                    )
-#         folium.CircleMarker(location = [lat, longit], radius=radius, popup= popup_text, fill =True).add_to(marker_cluster)
-# #show the map
-# world_map
-=======
 data_abo = data[data["VAR"] == "BB-P100-TOT"]
 data_abo = data_abo[data_abo["TIME"] == "2019"]
 
@@ -123,7 +73,7 @@ for i in range(len(data_abo)):
             lat = coord['latitude'][k]
             longit = coord['longitude'][k]
 
-    radius=5
+    radius=data_abo.iloc[i]["Value"]
     popup_text = """Country : {}<br>
                 %of Users : {}<br>"""
     popup_text = popup_text.format(data_abo.iloc[i]["Pays"],
@@ -132,4 +82,3 @@ for i in range(len(data_abo)):
     folium.CircleMarker(location = [lat, longit], radius=radius, popup= popup_text, fill =True).add_to(marker_cluster)
 #show the map
 world_map.save(outfile='map.html')
->>>>>>> e21d85a76b76785f07fe9dd90c809d7d7c6e6939
