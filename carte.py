@@ -46,7 +46,9 @@ def geolocate(country):
 
 
 data = pd.read_csv("abo.csv",delimiter=',')
+coord = pd.read_csv("world_coord.csv",delimiter=',', encoding='latin1')
 country = data["Pays"]
+<<<<<<< HEAD
 
 input_countries = country.unique()
 li = []
@@ -95,3 +97,39 @@ print(data.head(40))
 #         folium.CircleMarker(location = [lat, longit], radius=radius, popup= popup_text, fill =True).add_to(marker_cluster)
 # #show the map
 # world_map
+=======
+data_abo = data[data["VAR"] == "BB-P100-TOT"]
+data_abo = data_abo[data_abo["TIME"] == "2019"]
+
+test = data_abo["Value"]
+
+print(country.unique())
+print(coord["Country"])
+print(data_abo)
+
+print(str(coord["Country"][0]))
+print(data_abo.iloc[0]["Value"])
+
+#Create a world map to show distributions of users 
+import folium
+from folium.plugins import MarkerCluster
+#empty map
+world_map= folium.Map(tiles="cartodbpositron")
+marker_cluster = MarkerCluster().add_to(world_map)
+#for each coordinate, create circlemarker of user percent
+for i in range(len(data_abo)):
+    for k in range(len(coord)):
+        if(str(coord["Country"][k]) == str(data_abo["Pays"].unique()[i])):
+            lat = coord['latitude'][k]
+            longit = coord['longitude'][k]
+
+    radius=5
+    popup_text = """Country : {}<br>
+                %of Users : {}<br>"""
+    popup_text = popup_text.format(data_abo.iloc[i]["Pays"],
+                            data_abo.iloc[i]["Value"]
+                            )
+    folium.CircleMarker(location = [lat, longit], radius=radius, popup= popup_text, fill =True).add_to(marker_cluster)
+#show the map
+world_map.save(outfile='map.html')
+>>>>>>> e21d85a76b76785f07fe9dd90c809d7d7c6e6939
