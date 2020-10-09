@@ -34,8 +34,8 @@ data_abo = dataf[(dataf["VAR"] == "BB-P100-TOT") | (dataf["VAR"] == "BB-P100-DSL
 xvalue = data_abo[data_abo["VAR"] == "BB-P100-TOT"]
 yvalue = data_abo[data_abo["VAR"] == "BB-P100-DSL"]
 
-print(xvalue.head())
-print(yvalue.head())
+# print(xvalue.head())
+# print(yvalue.head())
 
 yearsA = xvalue["TIME"].unique()
 yearsB = yvalue["TIME"].unique()
@@ -44,8 +44,8 @@ data_abo = { year:data_abo.query("TIME == @year") for year in yearsA}
 xvalue = { year:xvalue.query("TIME == @year") for year in yearsA}
 yvalue = { year:yvalue.query("TIME == @year") for year in yearsB}
 
-print(xvalue[year])
-print(yvalue[year])
+# print(xvalue[year])
+# print(yvalue[year])
 
 #
 # Main
