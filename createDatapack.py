@@ -1,6 +1,9 @@
 import os
 
 import pandas as pd
+import plotly.graph_objs as go
+import plotly
+import plotly.express as px
 
 # dataAbo = pd.read_csv("abo.csv",delimiter=",")
 
@@ -69,6 +72,32 @@ def mergeData(names,liData,dataName1,dataName2,join):
 
     return joinedData
 
+def createGraph(data,x,y,title="Insérez un titre",mode='markers',text="Entity"):
+    year=2008
+    data = data.query('Year == '+str(year))
+    trace = px.scatter(
+    x=data[x],
+    y=data[y],
+    color = data['Year']
+    )
+    
+    # data = [trace]
+
+    # layout = px.layout(title=title,
+    #                         xaxis=dict(
+    #                         title=x,
+    #                         ticklen=5,
+    #                         zeroline=False,
+    #                         gridwidth=2,
+    #                     ),
+    #                     yaxis=dict(
+    #                         title=y,
+    #                         ticklen=5,
+    #                         zeroline=False,
+    #                         gridwidth=2,
+    #                     ),)
+    trace.show()
+    return trace
 
 
 if __name__ == "__main__":
@@ -76,11 +105,16 @@ if __name__ == "__main__":
     filesName,data = parseCSV(r".\data_world")
 
     try:
-        a = mergeData(filesName,data,"happiness-cantril-ladder.csv","human-development-index.csv",["Code","Year","Entity"])
+        data = mergeData(filesName,data,"happiness-cantril-ladder.csv","human-development-index.csv",["Code","Year","Entity"])
         
     except NameError as e:
         print(e)
         quit()
 
-    print(a.head())
-    a.to_csv(r".\data_world\AAAfichier-test.csv",sep=",")
+    print(data.head())
+    data.to_csv(r".\data_world\AAAfichier-test.csv",sep=",")
+
+    graph = createGraph(data,"Life satisfaction in Cantril Ladder (World Happiness Report 2019)","Human Development Index (UNDP)",title="Happiness vs HDI")
+    # graph.show()
+    # plotly.offline.plot(graph, filename='fig.html', auto_open=True, include_plotlyjs='cdn')
+# https://plotly.com/python/text-and-annotations/
