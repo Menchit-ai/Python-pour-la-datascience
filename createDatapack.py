@@ -81,7 +81,7 @@ def standardizeData(liData,model="basic"):
 
     stdData = []
 
-    if model is "basic":
+    if model == "basic":
         scheme = ["Entity","Code","Year"]
 
         for data in liData:
@@ -92,9 +92,9 @@ def standardizeData(liData,model="basic"):
 
                 if not "Code" in col:
                     for c in range(len(col)):
-                        if (isinstance(data[col[c]][0], str))  and  (len(data[col[c]][0]) is 3):
+                        if (isinstance(data[col[c]][0], str))  and  (len(data[col[c]][0]) == 3):
                             code = data[col[c]].apply(lambda x: pycountry.countries.get(alpha_3=x))
-                            if code.isnull().sum().item() is 0:
+                            if code.isnull().sum().item() == 0:
                                 renamer[col[c]] = "Code"
                                 break
 
