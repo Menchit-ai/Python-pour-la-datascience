@@ -5,6 +5,10 @@ import plotly.graph_objs as go
 import plotly
 import plotly.express as px
 
+import pycountry
+import numpy as np
+import datetime
+
 # dataAbo = pd.read_csv("abo.csv",delimiter=",")
 
 # # passer TIME en date en supprimant les semestres
@@ -47,8 +51,8 @@ def parseCSV(path):
     pathFiles = [path + sub for sub in filesName] 
     for fil in filesName:
         if not fil.endswith(".csv"):
-            filesName.remove(i)
-            pathFiles.remove(i)
+            filesName.remove(fil)
+            pathFiles.remove(fil)
     #donne la liste des tous les fichiers csv présent dans le répertoire indiqué par path
 
     data = []
@@ -72,32 +76,78 @@ def mergeData(names,liData,dataName1,dataName2,join):
 
     return joinedData
 
-def createGraph(data,x,y,title="Insérez un titre",mode='markers',text="Entity"):
-    year=2008
-    data = data.query('Year == '+str(year))
-    trace = px.scatter(
-    x=data[x],
-    y=data[y],
-    color = data['Year']
-    )
-    
-    # data = [trace]
+def standardizeData(liData,model="basic"):
+    # basic scheme : Entity,Code,Year,data
 
-    # layout = px.layout(title=title,
-    #                         xaxis=dict(
-    #                         title=x,
-    #                         ticklen=5,
-    #                         zeroline=False,
-    #                         gridwidth=2,
-    #                     ),
-    #                     yaxis=dict(
-    #                         title=y,
-    #                         ticklen=5,
-    #                         zeroline=False,
-    #                         gridwidth=2,
-    #                     ),)
-    trace.show()
-    return trace
+    stdData = []
+
+    if model is "basic":
+        scheme = ["Entity","Code","Year"]
+
+        for data in liData:
+            col = data.columns
+
+            renamer = {}
+            if not set(col).issubset(scheme):
+
+                if not "Code" in col:
+                    for c in range(len(col)):
+                        if (isinstance(data[col[c]][0], str))  and  (len(data[col[c]][0]) is 3):
+                            code = data[col[c]].apply(lambda x: pycountry.countries.get(alpha_3=x))
+                            if code.isnull().sum().item() is 0:
+                                renamer[col[c]] = "Code"
+                                break
+
+                if not "Entity" in col:
+                    print("Enter test")
+                    for c in range(len(col)):
+                        print("test for column "+str(col[c]))
+                        if isinstance(data[col[c]][0], str):
+                            print("La colonne est testée")
+                            code = data[col[c]].apply(lambda x: pycountry.countries.get(name=x))
+                            print(str(code.isnull().sum().item()) + " erreurs ont été trouvées")
+                            if code.isnull().sum().item() < len(data[col[c]]) * 0.25: # estime que si 75% des entrées sont des pays, toutes le sont
+                                renamer[col[c]] = "Entity"
+                                break
+
+                if not "Year" in col:
+                    for c in range(len(col)):
+                        if isinstance(data[col[c]][0], int)  and  (len(data[col[c]][0]) is 4):
+                            code = data[col[c]].apply(lambda x: 1900<x and x<datetime.datetime.now().year)
+                            if code.sum() is len(code):
+                                renamer[col[c]] = "Year"
+                                break
+
+            stdData.append(data.rename(columns = renamer))
+
+    return stdData
+
+# def createGraph(data,x,y,title="Insérez un titre",mode='markers',text="Entity"):
+#     year=2008
+#     data = data.query('Year == '+str(year))
+#     trace = px.scatter(
+#     x=data[x],
+#     y=data[y],
+#     color = data['Year']
+#     )
+    
+#     data = [trace]
+
+#     layout = px.layout(title=title,
+#                             xaxis=dict(
+#                             title=x,
+#                             ticklen=5,
+#                             zeroline=False,
+#                             gridwidth=2,
+#                         ),
+#                         yaxis=dict(
+#                             title=y,
+#                             ticklen=5,
+#                             zeroline=False,
+#                             gridwidth=2,
+#                         ),)
+#     trace.show()
+#     return trace
 
 
 if __name__ == "__main__":
@@ -111,10 +161,16 @@ if __name__ == "__main__":
         print(e)
         quit()
 
-    print(data.head())
+
     data.to_csv(r".\data_world\AAAfichier-test.csv",sep=",")
 
-    graph = createGraph(data,"Life satisfaction in Cantril Ladder (World Happiness Report 2019)","Human Development Index (UNDP)",title="Happiness vs HDI")
+    print("colonnes de base :"+ str(data.columns))
+    data = data.rename(columns = {'Code':'ccc','Entity':'eee','Year':'yyy'})
+    print("colonnes renommées :"+ str(data.columns))
+    l = standardizeData([data])
+    data = l[0]
+    print("colonnes standardes :"+ str(data.columns))
+
     # graph.show()
     # plotly.offline.plot(graph, filename='fig.html', auto_open=True, include_plotlyjs='cdn')
 # https://plotly.com/python/text-and-annotations/
