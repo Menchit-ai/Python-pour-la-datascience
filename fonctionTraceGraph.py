@@ -8,14 +8,23 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-def createFig(namedata, yearname, yearnumber, value1, value2, value3, value4):
-	dataf = pd.read_csv(namedata)
-	years = dataf[yearname].unique()
-	data_dic = {year:dataf.query(yearname + " == @year") for year in years}
+def uniqueYear(dataf, yearname):
+	return dataf[yearname].unique()
+
+def createDataDic(dataf, yearname, years):
+	return {year:dataf.query(yearname + " == @year") for year in years}
+
+def createFig(data_dic, yearnumber, value1, value2, value3, value4):
 
 	fig = px.scatter(data_dic[yearnumber], x=data_dic[yearnumber][value1], y=data_dic[yearnumber][value2], #data[input_value]
                         color=data_dic[yearnumber][value3], #size="pop",
                         hover_name=data_dic[yearnumber][value4])
+
+	return fig
+
+def dashBoard(dataf, years, fig, value1, value2, value3, value4):
+
+	app = dash.Dash(__name__)
 
 	app.layout = html.Div([
         dcc.Tabs([
@@ -46,9 +55,9 @@ def createFig(namedata, yearname, yearnumber, value1, value2, value3, value4):
     )
 
     def update_figure(input_value): # (3)
-        return px.scatter(data_dic[input_value], x=data_dic[input_value][value1], y=data_dic[input_value][value2], #data[input_value]
-                        color=data_dic[input_value][value3], #size="pop",
-                        hover_name=data_dic[input_value][value4]) # (4)
+        return px.scatter(dataf[input_value], x=dataf[input_value][value1], y=dataf[input_value][value2], #data[input_value]
+                        color=dataf[input_value][value3], #size="pop",
+                        hover_name=dataf[input_value][value4]) # (4)
 
     app.run_server(debug=True)
 
@@ -56,5 +65,11 @@ def createFig(namedata, yearname, yearnumber, value1, value2, value3, value4):
 
 
 if __name__ == "__main__":
+
+	yearsU = uniqueYear(df, "")
+	dataDic = createDataDic(df, "", yearsU)
     
-    createFig()#Completer ici pour les params
+    fig = createFig(dataDic, )#Completer ici pour les params
+
+    dashBoard(dataDic, yearsU, fig, )#Completer ici pour les params
+
