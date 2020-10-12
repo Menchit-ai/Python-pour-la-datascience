@@ -40,6 +40,8 @@ yvalue = data_abo[data_abo["VAR"] == "BB-P100-DSL"]
 yearsA = xvalue["TIME"].unique()
 yearsB = yvalue["TIME"].unique()
 
+variables = dataf["VAR"].unique()
+
 data_abo = { year:data_abo.query("TIME == @year") for year in yearsA}
 xvalue = { year:xvalue.query("TIME == @year") for year in yearsA}
 yvalue = { year:yvalue.query("TIME == @year") for year in yearsB}
@@ -68,6 +70,18 @@ if __name__ == '__main__':
     fig = px.scatter(xvalue[year], x=xvalue[year]["Value"], y=yvalue[year]["Value"], #data[input_value]
                         color=xvalue[year]["Pays"], #size="pop",
                         hover_name=xvalue[year]["Pays"])
+
+    # @app.callback(
+    # Output(component_id='graph2', component_property='figure'), # (1)
+    # [Input(component_id='variables', component_property='value')] # (2)
+    # )
+
+    # def update_figure2(input_value): # (3)
+    #     return px.histogram(dataf[input_value], x=dataf[input_value]["Value"])
+
+    # fig2 = px.histogram(dataf, x=dataf)
+
+    #Pour l'histogramme du tab2 : on pourra montrer n'importe quoi et le lier aux RadioItems
 
     app.layout = html.Div([
         dcc.Tabs([
@@ -101,9 +115,15 @@ if __name__ == '__main__':
                             {'x': [1, 2, 3], 'y': [1, 4, 1],
                                 'type': 'bar', 'name': 'SF'},
                             {'x': [1, 2, 3], 'y': [1, 2, 3],
-                            'type': 'bar', 'name': u'Montréal'},
+                            'type': 'bar', 'name': u'Montréal'},#Rajouter ici graph2
                         ]
                     }
+                ),
+
+                dcc.RadioItems(
+                    id="variables",
+                    options=[{'label' : str(y), 'value' : str(y)} for y in variables],
+                    value='BB-P100-TOT'
                 )
             ]),
             dcc.Tab(label='Tab three', children=[
