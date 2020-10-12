@@ -99,22 +99,18 @@ def standardizeData(liData,model="basic"):
                                 break
 
                 if not "Entity" in col:
-                    print("Enter test")
                     for c in range(len(col)):
-                        print("test for column "+str(col[c]))
                         if isinstance(data[col[c]][0], str):
-                            print("La colonne est testée")
                             code = data[col[c]].apply(lambda x: pycountry.countries.get(name=x))
-                            print(str(code.isnull().sum().item()) + " erreurs ont été trouvées")
                             if code.isnull().sum().item() < len(data[col[c]]) * 0.25: # estime que si 75% des entrées sont des pays, toutes le sont
                                 renamer[col[c]] = "Entity"
                                 break
 
                 if not "Year" in col:
                     for c in range(len(col)):
-                        if isinstance(data[col[c]][0], int)  and  (len(data[col[c]][0]) is 4):
+                        if isinstance(data[col[c]][0], np.int64):
                             code = data[col[c]].apply(lambda x: 1900<x and x<datetime.datetime.now().year)
-                            if code.sum() is len(code):
+                            if code.sum() == len(code):
                                 renamer[col[c]] = "Year"
                                 break
 
@@ -170,7 +166,6 @@ if __name__ == "__main__":
     l = standardizeData([data])
     data = l[0]
     print("colonnes standardes :"+ str(data.columns))
-
     # graph.show()
     # plotly.offline.plot(graph, filename='fig.html', auto_open=True, include_plotlyjs='cdn')
 # https://plotly.com/python/text-and-annotations/
