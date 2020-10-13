@@ -1,5 +1,7 @@
 import os
 
+import requests
+
 import pandas as pd
 import plotly.graph_objs as go
 import plotly
@@ -43,6 +45,13 @@ import datetime
 # #     print(i," ",dataSan[i].unique())
 # dataSan = dataSan.drop(["INDICATOR","FREQUENCY"],axis=1)
 # # faire le pivot longer
+
+def downloader(urls):
+    # attend une liste d'urls
+    for url in urls:
+        r = requests.get(url, allow_redirects=True)
+        filename = getFilename_fromCd(r.headers.get('content-disposition'))
+        open(r'.\data_world\\'+str(filename), 'wb').write(r.content)
 
 def parseCSV(path):
     if not path.endswith("\\"):
@@ -117,33 +126,6 @@ def standardizeData(liData,model="basic"):
             stdData.append(data.rename(columns = renamer))
 
     return stdData
-
-# def createGraph(data,x,y,title="Insérez un titre",mode='markers',text="Entity"):
-#     year=2008
-#     data = data.query('Year == '+str(year))
-#     trace = px.scatter(
-#     x=data[x],
-#     y=data[y],
-#     color = data['Year']
-#     )
-    
-#     data = [trace]
-
-#     layout = px.layout(title=title,
-#                             xaxis=dict(
-#                             title=x,
-#                             ticklen=5,
-#                             zeroline=False,
-#                             gridwidth=2,
-#                         ),
-#                         yaxis=dict(
-#                             title=y,
-#                             ticklen=5,
-#                             zeroline=False,
-#                             gridwidth=2,
-#                         ),)
-#     trace.show()
-#     return trace
 
 
 if __name__ == "__main__":
