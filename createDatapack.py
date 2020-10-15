@@ -166,8 +166,8 @@ def dashBoard(dataf, years, fig, value1, value2, value3, value4, appl):
                     id="year-slider",
                     min = years[0],
                     max = years[len(years)-1],
-                    step = 1,
-                    #marks=[{year : str(year) for year in years}],
+                    step = None,
+                    marks={int(i) : str(i) for i in years},
                     value=years[0]
                 )
             ]),
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     dico = createDataDic(data, 'Year', diffyears)
 
     print(diffyears)
-    print(dico[2008])
+    #print(dico[2008])
     fig = createFig(dico, 2008, str(data.columns[nTab-1]), str(data.columns[nTab-2]), 'Code', 'Entity')
 
 
