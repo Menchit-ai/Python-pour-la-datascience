@@ -147,7 +147,7 @@ def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
 
     return fig
 
-def dashBoard(dataf, years, fig, value1, value2, value3, value4, appl):
+def dashBoard(dataf, years, fig, value1, value2, value3, value4, dataO, appl):
 
     appl.layout = html.Div([
         dcc.Tabs([
@@ -169,6 +169,18 @@ def dashBoard(dataf, years, fig, value1, value2, value3, value4, appl):
                     marks={int(i) : str(i) for i in years},
                     value=years[0]
                 )
+            ]),
+
+            dcc.Tab(label='Tab two', children=[
+                dcc.Graph(
+                    figure = px.histogram(dataO, x = dataO[value2])
+                )
+
+                #dcc.RadioItems(
+                #    id="variables",
+                #    options=[{'label' : str(y), 'value' : str(y)} for y in variables],
+                #    value='BB-P100-TOT'
+                #)
             ]),
         ])
     ])
