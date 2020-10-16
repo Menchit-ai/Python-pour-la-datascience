@@ -147,8 +147,8 @@ def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
 
     return fig
 
-def dashBoard(dataf, years, fig, value1, value2, value3, value4, appl):
-
+def dashBoard(dataf, years, fig, x, y, coloured=None, hover=None, appl=None):
+    
     appl.layout = html.Div([
         dcc.Tabs([
             dcc.Tab(label='Graphe', children=[
@@ -172,16 +172,16 @@ def dashBoard(dataf, years, fig, value1, value2, value3, value4, appl):
             ]),
         ])
     ])
-
+    webbrowser.open("http://127.0.0.1:8050/",new=1)
     @appl.callback(
     Output(component_id='graph1', component_property='figure'), # (1)
     [Input(component_id='year-slider', component_property='value')] # (2)
     )
 
     def update_figure(input_value): # (3)
-        return px.scatter(dataf[input_value], x=dataf[input_value][value1], y=dataf[input_value][value2], #data[input_value]
-                        color=dataf[input_value][value3], #size="pop",
-                        hover_name=dataf[input_value][value4]) # (4)
+        return px.scatter(dataf[input_value], x=dataf[input_value][x], y=dataf[input_value][y], #data[input_value]
+                        color=dataf[input_value][coloured], #size="pop",
+                        hover_name=dataf[input_value][hover]) # (4)
 
 
 ###############################################################################################################
