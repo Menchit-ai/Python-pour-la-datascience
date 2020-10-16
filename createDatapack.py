@@ -156,7 +156,11 @@ def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
 
     return fig
 
+<<<<<<< HEAD
 def dashBoard(dataf,dataO, years, fig, x, y, coloured=None, hover=None, appl=None):
+=======
+def dashBoard(dataf, dataO, years, fig, x, y, coloured=None, hover=None, appl=None):
+>>>>>>> 2ec8875ee33f28360b13903b63c197a861e75c7f
     
     appl.layout = html.Div([
         dcc.Tabs([
@@ -190,6 +194,10 @@ def dashBoard(dataf,dataO, years, fig, x, y, coloured=None, hover=None, appl=Non
                 #    options=[{'label' : str(y), 'value' : str(y)} for y in variables],
                 #    value='BB-P100-TOT'
                 #)
+            ]),
+
+            dcc.Tab(label='Tab three', children=[
+                html.Iframe(id = 'map', srcDoc = open('map.html','r').read(), width = '100%', height = '600')
             ]),
         ])
     ])

@@ -26,5 +26,9 @@ if __name__ == "__main__":
 
 
     app = dash.Dash(__name__)
+<<<<<<< HEAD
     dashBoard(dico,data, diffyears, fig,  x, y, 'Continent', 'Entity', appl=app)
+=======
+    dashBoard(dico, data, diffyears, fig,  str(data.columns[nTab-2]), str(data.columns[nTab-1]), 'Entity', 'Entity', appl=app)
+>>>>>>> 2ec8875ee33f28360b13903b63c197a861e75c7f
     app.run_server(debug=True)
