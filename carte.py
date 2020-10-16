@@ -3,8 +3,10 @@ import numpy as np
 
 import pycountry
 
+from createDatapack import *
+
 #function to convert to alpha2 country codes and continents
-from pycountry_convert import country_alpha2_to_continent_code, country_name_to_country_alpha2
+from pycountry_convert import country_alpha2_to_continent_code, country_name_to_country_alpha2, country_alpha3_to_country_alpha2,convert_continent_code_to_continent_name
 def get_continent(col):
     try:
         cn_a2_code =  country_name_to_country_alpha2(col)
@@ -41,12 +43,12 @@ data_abo = data_abo[data_abo["TIME"] == "2019"]
 
 test = data_abo["Value"]
 
-print(country.unique())
-print(coord["Country"])
-print(data_abo)
+# print(country.unique())
+# print(coord["Country"])
+# print(data_abo)
 
-print(str(coord["Country"][0]))
-print(data_abo.iloc[0]["Value"])
+# print(str(coord["Country"][0]))
+# print(data_abo.iloc[0]["Value"])
 
 #Create a world map to show distributions of users 
 import folium
@@ -70,3 +72,11 @@ for i in range(len(data_abo)):
     folium.CircleMarker(location = [lat, longit], radius=radius, popup= popup_text, fill =True).add_to(marker_cluster)
 #show the map
 world_map.save(outfile='map.html')
+
+if __name__ == "__main__":
+    init()
+    filesName,data,liDataCol = parseCSV('./data_world')
+    data = data[0]
+    alpha2 = data['Code'].apply(lambda x : country_alpha3_to_country_alpha2(x))
+    data['Continent'] = alpha2.apply(lambda x : convert_continent_code_to_continent_name(country_alpha2_to_continent_code(x)))
+    print(data['Continent'])

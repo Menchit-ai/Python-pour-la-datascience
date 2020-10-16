@@ -11,6 +11,7 @@ if __name__ == "__main__":
         print(e)
         quit()
 
+    data = continent(data)
     nTab = len(data.columns)
     diffyears = uniqueYear(data, 'Year')
     diffyears.sort()
@@ -18,9 +19,12 @@ if __name__ == "__main__":
 
     #print(diffyears)
     #print(dico[2008])
-    fig = createFig(dico, 2008, str(data.columns[nTab-2]), str(data.columns[nTab-1]), 'Entity', 'Entity')
+    x = "Life satisfaction in Cantril Ladder (World Happiness Report 2019)"
+    y = str(data.columns[-2])
+
+    fig = createFig(dico, 2008, x, y, 'Continent', 'Entity')
 
 
     app = dash.Dash(__name__)
-    dashBoard(dico, diffyears, fig,  str(data.columns[nTab-2]), str(data.columns[nTab-1]), 'Entity', 'Entity', appl=app)
+    dashBoard(dico,data, diffyears, fig,  x, y, 'Continent', 'Entity', appl=app)
     app.run_server(debug=True)

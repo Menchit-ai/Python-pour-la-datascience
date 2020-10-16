@@ -8,6 +8,7 @@ import plotly
 import plotly.express as px
 
 import pycountry
+import pycountry_convert as pc
 import numpy as np
 import datetime
 
@@ -29,6 +30,7 @@ def init():
     import plotly.express as px
 
     import pycountry
+    import pycountry_convert as pc
     import numpy as np
     import datetime
 
@@ -87,6 +89,8 @@ def mergeData(names,liData,dataName1,dataName2,join):
 
     joinedData = data1.merge(data2, on=join, how='inner')
 
+    # joinedData["Continent"]=
+
     return joinedData
 
 def standardizeData(liData,model="basic"):
@@ -131,6 +135,11 @@ def standardizeData(liData,model="basic"):
 
     return stdData
 
+def continent(data):
+    alpha2 = data['Code'].apply(lambda x : pc.country_alpha3_to_country_alpha2(x))
+    data['Continent'] = alpha2.apply(lambda x : pc.convert_continent_code_to_continent_name(pc.country_alpha2_to_continent_code(x)))
+    return data
+
 ###############################################################################################################    
 
 def uniqueYear(dataf, yearname):
@@ -147,7 +156,7 @@ def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
 
     return fig
 
-def dashBoard(dataf, years, fig, x, y, coloured=None, hover=None, appl=None):
+def dashBoard(dataf,dataO, years, fig, x, y, coloured=None, hover=None, appl=None):
     
     appl.layout = html.Div([
         dcc.Tabs([
@@ -173,7 +182,7 @@ def dashBoard(dataf, years, fig, x, y, coloured=None, hover=None, appl=None):
 
             dcc.Tab(label='Tab two', children=[
                 dcc.Graph(
-                    figure = px.histogram(dataO, x = dataO[value2])
+                    figure = px.histogram(dataO, x = dataO[y])
                 )
 
                 #dcc.RadioItems(
