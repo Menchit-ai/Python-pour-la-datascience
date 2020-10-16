@@ -170,6 +170,18 @@ def dashBoard(dataf, years, fig, x, y, coloured=None, hover=None, appl=None):
                     value=years[0]
                 )
             ]),
+
+            dcc.Tab(label='Tab two', children=[
+                dcc.Graph(
+                    figure = px.histogram(dataO, x = dataO[value2])
+                )
+
+                #dcc.RadioItems(
+                #    id="variables",
+                #    options=[{'label' : str(y), 'value' : str(y)} for y in variables],
+                #    value='BB-P100-TOT'
+                #)
+            ]),
         ])
     ])
     webbrowser.open("http://127.0.0.1:8050/",new=1)
