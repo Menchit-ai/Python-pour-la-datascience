@@ -16,6 +16,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
+import webbrowser
+
 def init():
     import os
 
@@ -34,6 +36,8 @@ def init():
     import dash_core_components as dcc
     import dash_html_components as html
     from dash.dependencies import Input, Output
+
+    import webbrowser
 
 def downloader(urls):
     # attend une liste d'urls
@@ -58,7 +62,11 @@ def parseCSV(path):
     for fil in pathFiles:
         data.append(pd.read_csv(fil,delimiter=","))
     #data est la liste des dataframes correpondant aux csv présent dans le répertoire
-    return (filesName,data)
+    liDataCol = []
+    for d in data:
+        liDataCol.append(str(d.columns[-1]))
+    #liDataCol est la liste contenant les noms des colonnes de chaque dataframe avec la donnée intéressante
+    return (filesName,data,liDataCol)
 
 def getDataCol(liData):
     liDataCol = []
@@ -181,7 +189,7 @@ def dashBoard(dataf, years, fig, value1, value2, value3, value4, appl):
 
 if __name__ == "__main__":
     
-    filesName,data = parseCSV(r".\data_world")
+    filesName,data,dataCol = parseCSV(r".\data_world")
 
     try:
         data = mergeData(filesName,data,"happiness-cantril-ladder.csv","human-development-index.csv",["Code","Year","Entity"])
