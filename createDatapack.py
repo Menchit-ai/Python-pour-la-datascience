@@ -16,40 +16,24 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-# dataAbo = pd.read_csv("abo.csv",delimiter=",")
+def init():
+    import os
 
-# # passer TIME en date en supprimant les semestres
-# # drop Pays, Variable, Temps, Unit, Flag Codes, Flags, PowerCode
+    import requests
 
-# # on drop les colonnes servant à l'homme et les colonnes ne contenant que des NaN
-# dataAbo = dataAbo.drop(["Pays","Variable","Temps","Unit","Flag Codes","Flags","PowerCode","Reference Period Code","Reference Period"], axis=1)
+    import pandas as pd
+    import plotly.graph_objs as go
+    import plotly
+    import plotly.express as px
 
-# ##########################################################################################
+    import pycountry
+    import numpy as np
+    import datetime
 
-# dataPIB = pd.read_csv("PIB\dataPIB.csv",delimiter=",",header = 2)
-# # print(dataPIB.head())
-# # print(dataPIB.info())
-# # print(dataPIB["Indicator Name"].unique()) # --> supprimer la colonne
-# dataPIB = dataPIB.drop("Indicator Name",axis=1)
-# # print(dataPIB["Indicator Code"].unique()) # --> supprimer la colonne
-# dataPIB = dataPIB.drop("Indicator Code",axis=1)
-
-# # print(dataPIB.describe())
-# # print(dataPIB.isna().sum())
-# dataPIB = dataPIB.drop(["Unnamed: 65","2020"],axis=1)
-# # print(dataPIB.info())
-
-
-# ##########################################################################################
-
-# dataSan = pd.read_csv("depense_sante.csv",delimiter=",")
-# # print(dataSan)
-# # print(dataSan.isna().sum())
-# # print("##################")
-# # for i in dataSan.columns:
-# #     print(i," ",dataSan[i].unique())
-# dataSan = dataSan.drop(["INDICATOR","FREQUENCY"],axis=1)
-# # faire le pivot longer
+    import dash
+    import dash_core_components as dcc
+    import dash_html_components as html
+    from dash.dependencies import Input, Output
 
 def downloader(urls):
     # attend une liste d'urls
@@ -75,6 +59,12 @@ def parseCSV(path):
         data.append(pd.read_csv(fil,delimiter=","))
     #data est la liste des dataframes correpondant aux csv présent dans le répertoire
     return (filesName,data)
+
+def getDataCol(liData):
+    liDataCol = []
+    for data in liData:
+        liDataCol.append(str(data.columns[-1]))
+    return liDataCol
 
 def mergeData(names,liData,dataName1,dataName2,join):
     
@@ -141,11 +131,11 @@ def uniqueYear(dataf, yearname):
 def createDataDic(dataf, yearname, years):
     return {year:dataf.query(yearname + " == @year") for year in years}
 
-def createFig(data_dic, yearnumber, value1, value2, value3, value4):
+def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
 
-    fig = px.scatter(data_dic[yearnumber], x=data_dic[yearnumber][value1], y=data_dic[yearnumber][value2], #data[input_value]
-                        color=data_dic[yearnumber][value3], #size="pop",
-                        hover_name=data_dic[yearnumber][value4])
+    fig = px.scatter(data_dic[yearnumber], x=data_dic[yearnumber][x], y=data_dic[yearnumber][y], #data[input_value]
+                        color=data_dic[yearnumber][coloured], #size="pop",
+                        hover_name=data_dic[yearnumber][hover])
 
     return fig
 
@@ -212,21 +202,3 @@ if __name__ == "__main__":
     data = l[0]
     print("colonnes standardes :"+ str(data.columns))
 
-    nTab = len(data.columns)
-    #print(data.head())
-    # graph.show()
-    # plotly.offline.plot(graph, filename='fig.html', auto_open=True, include_plotlyjs='cdn')
-# https://plotly.com/python/text-and-annotations/
-
-    diffyears = uniqueYear(data, 'Year')
-    diffyears.sort()
-    dico = createDataDic(data, 'Year', diffyears)
-
-    print(diffyears)
-    #print(dico[2008])
-    fig = createFig(dico, 2008, str(data.columns[nTab-1]), str(data.columns[nTab-2]), 'Code', 'Entity')
-
-
-    app = dash.Dash(__name__)
-    dashBoard(dico, diffyears, fig, str(data.columns[nTab-1]), str(data.columns[nTab-2]), 'Code', 'Entity', app)
-    app.run_server(debug=True)
