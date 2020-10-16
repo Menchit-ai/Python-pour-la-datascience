@@ -57,7 +57,6 @@ def downloader(urls):
         r = requests.get(url, allow_redirects=True)
         filename = getFilename_fromCd(r.headers.get('content-disposition'))
         open(r'.\data_world\\'+str(filename), 'wb').write(r.content)
-    return True
 
 def parseCSV(path):
     if not path.endswith("\\"):
@@ -204,10 +203,8 @@ if __name__ == "__main__":
     data.to_csv(r".\data_world\AAAfichier-test.csv",sep=",")
 
     print("colonnes de base :"+ str(data.columns))
-    print()
     data = data.rename(columns = {'Code':'ccc','Entity':'eee','Year':'yyy'})
     print("colonnes renommées :"+ str(data.columns))
-    print()
     l = standardizeData([data])
     data = l[0]
     print("colonnes standardes :"+ str(data.columns))
