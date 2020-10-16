@@ -22,5 +22,5 @@ if __name__ == "__main__":
 
 
     app = dash.Dash(__name__)
-    dashBoard(dico, diffyears, fig,  str(data.columns[nTab-2]), str(data.columns[nTab-1]), 'Entity', 'Entity', appl=app)
+    dashBoard(dico, data, diffyears, fig,  str(data.columns[nTab-2]), str(data.columns[nTab-1]), 'Entity', 'Entity', appl=app)
     app.run_server(debug=True)

@@ -147,7 +147,7 @@ def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
 
     return fig
 
-def dashBoard(dataf, years, fig, x, y, coloured=None, hover=None, appl=None):
+def dashBoard(dataf, dataO, years, fig, x, y, coloured=None, hover=None, appl=None):
     
     appl.layout = html.Div([
         dcc.Tabs([
@@ -173,7 +173,7 @@ def dashBoard(dataf, years, fig, x, y, coloured=None, hover=None, appl=None):
 
             dcc.Tab(label='Tab two', children=[
                 dcc.Graph(
-                    figure = px.histogram(dataO, x = dataO[value2])
+                    figure = px.histogram(dataO, x = dataO[y])
                 )
 
                 #dcc.RadioItems(
@@ -181,6 +181,10 @@ def dashBoard(dataf, years, fig, x, y, coloured=None, hover=None, appl=None):
                 #    options=[{'label' : str(y), 'value' : str(y)} for y in variables],
                 #    value='BB-P100-TOT'
                 #)
+            ]),
+
+            dcc.Tab(label='Tab three', children=[
+                html.Iframe(id = 'map', srcDoc = open('map.html','r').read(), width = '100%', height = '600')
             ]),
         ])
     ])
