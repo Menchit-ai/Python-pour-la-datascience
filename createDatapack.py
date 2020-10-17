@@ -7,7 +7,7 @@ import plotly.graph_objs as go
 import plotly
 import plotly.express as px
 import folium
-import geopandas
+#import geopandas
 import json
 
 import pycountry
@@ -32,7 +32,7 @@ def init():
     import plotly
     import plotly.express as px
     import folium
-    import geopandas
+    #import geopandas
     import json
 
     import pycountry
@@ -59,7 +59,7 @@ def parseCSV(path):
     if not path.endswith("\\"):
         path = path +"\\"
     filesName = os.listdir(path)
-    pathFiles = [path + sub for sub in filesName] 
+    pathFiles = [path + sub for sub in filesName]
     for fil in filesName:
         if not fil.endswith(".csv"):
             filesName.remove(fil)
@@ -67,12 +67,14 @@ def parseCSV(path):
     #donne la liste des tous les fichiers csv présent dans le répertoire indiqué par path
 
     data = []
-    for fil in pathFiles:
-        data.append(pd.read_csv(fil,delimiter=","))
-    #data est la liste des dataframes correpondant aux csv présent dans le répertoire
     liDataCol = []
-    for d in data:
-        liDataCol.append(str(d.columns[-1]))
+    for i in range(len(pathFiles)):
+        data.append(pd.read_csv(pathFiles[i],delimiter=","))
+        liDataCol.append(str(data[i].columns[-1]))
+    #data est la liste des dataframes correpondant aux csv présent dans le répertoire
+    #liDataCol = []
+    #for d in data:
+        #liDataCol.append(str(d.columns[-1]))
     #liDataCol est la liste contenant les noms des colonnes de chaque dataframe avec la donnée intéressante
     return (filesName,data,liDataCol)
 
@@ -151,34 +153,34 @@ def continent(data):
     data['Continent'] = alpha2.apply(lambda x : pc.convert_continent_code_to_continent_name(pc.country_alpha2_to_continent_code(x)))
     return data
 
-def map(data,year,dataName):
+# def map(data,year,dataName):
 
-    data = data[data['Year'] == year]
-    world_json = json.load(open('./world.json'))
+#     data = data[data['Year'] == year]
+#     world_json = json.load(open('./world.json'))
 
-    # Initialize the map:
-    m = folium.Map(location=[39, 2.333333], zoom_start=1.8)
+#     # Initialize the map:
+#     m = folium.Map(location=[39, 2.333333], zoom_start=1.8)
 
-    cho = folium.Choropleth(
-    geo_data=world_json,
-    name='choropleth',
-    data=data,
-    columns=['Code', dataName],
-    key_on='feature.id',
-    fill_color='GnBu',
-    fill_opacity=0.7,
-    line_opacity=0.2,
-    legend_name=dataName
-    ).add_to(m)
+#     cho = folium.Choropleth(
+#     geo_data=world_json,
+#     name='choropleth',
+#     data=data,
+#     columns=['Code', dataName],
+#     key_on='feature.id',
+#     fill_color='GnBu',
+#     fill_opacity=0.7,
+#     line_opacity=0.2,
+#     legend_name=dataName
+#     ).add_to(m)
 
-    style_function = "font-size: 15px; font-weight: bold"
-    cho.geojson.add_child(
-        folium.features.GeoJsonTooltip(['name'], style=style_function, labels=False))
+#     style_function = "font-size: 15px; font-weight: bold"
+#     cho.geojson.add_child(
+#         folium.features.GeoJsonTooltip(['name'], style=style_function, labels=False))
 
-    folium.LayerControl().add_to(m)
+#     folium.LayerControl().add_to(m)
 
 
-    m.save('map.html')
+#     m.save('map.html')
 
 ###############################################################################################################    
 
@@ -196,7 +198,16 @@ def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
 
     return fig
 
-def dashBoard(dataf, dataO, years, fig, x, y, coloured=None, hover=None, appl=None):
+def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloured=None, hover=None, appl=None):
+
+    datagen = mergeData(filesName, datag, filesName[0],"life-expectancy.csv",["Code","Year","Entity"])
+    #datagen = continent(datagen)
+    diffyearsgen = uniqueYear(datagen, 'Year')
+    diffyearsgen.sort()
+    genI = 0
+
+    #print(diffyearsgen)
+    #print(datagen[datagen['Year']==diffyearsgen[0]])
     
     appl.layout = html.Div([
         dcc.Tabs([
@@ -223,23 +234,23 @@ def dashBoard(dataf, dataO, years, fig, x, y, coloured=None, hover=None, appl=No
             dcc.Tab(label='Histogramme', children=[
                 dcc.Graph(
                     id='histo',
-                    figure=px.histogram(dataO, x = dataO[y])
+                    figure=px.histogram(datagen[datagen['Year']==diffyearsgen[0]], x = dataCol[genI])
                 ),
                 html.Label('Year'),
                 dcc.Slider(
                     id="year-slider-histo",
-                    min = years[0],
-                    max = years[len(years)-1],
+                    min = diffyearsgen[0],
+                    max = diffyearsgen[len(diffyearsgen)-1],
                     step = None,
-                    marks={int(i) : str(i) for i in years},
-                    value=years[0]
-                )
+                    marks={int(i) : str(i) for i in diffyearsgen},
+                    value=diffyearsgen[0]
+                ),
 
-                #dcc.RadioItems(
-                #    id="variables",
-                #    options=[{'label' : str(y), 'value' : str(y)} for y in variables],
-                #    value='BB-P100-TOT'
-                #)
+                dcc.RadioItems(
+                    id="variables",
+                    options=[{'label' : y, 'value' : y} for y in filesName],
+                    value= filesName[0]
+                )
             ]),
 
             dcc.Tab(label='Carte', children=[
@@ -268,17 +279,24 @@ def dashBoard(dataf, dataO, years, fig, x, y, coloured=None, hover=None, appl=No
      Output(component_id='map', component_property='srcDoc')], # (1)
     [Input(component_id='year-slider-graph', component_property='value'),
      Input(component_id='year-slider-histo', component_property='value'),
-     Input(component_id='year-slider-map', component_property='value')] # (2)
+     Input(component_id='year-slider-map', component_property='value'),
+     Input(component_id='variables', component_property='value')] # (2)
     )
 
-    def update(input_graph,input_histo,input_map): # (3)
-        map(dataO,input_map,y)
+    def update(input_graph,input_histo,input_map, fichcsv): # (3)
+        #map(dataO,input_map,y)
+        genI = filesName.index(fichcsv)
+        datagen = mergeData(filesName, datag, filesName[genI],"life-expectancy.csv",["Code","Year","Entity"])
+        #datagen = continent(datagen)
+        diffyearsgen = uniqueYear(datagen, 'Year')
+        diffyearsgen.sort()
+
         return (
                 px.scatter(dataf[input_graph], x=dataf[input_graph][x], y=dataf[input_graph][y], #data[input_graph]
                         color=dataf[input_graph][coloured], #size="pop",
                         hover_name=dataf[input_graph][hover])
                 ,
-                px.histogram(dataO[dataO['Year']==input_histo], x = dataO[y])
+                px.histogram(datagen[datagen['Year']==input_histo], x = dataCol[genI])
                 ,
                 open('map.html','r').read()
         )
@@ -290,6 +308,8 @@ def dashBoard(dataf, dataO, years, fig, x, y, coloured=None, hover=None, appl=No
 if __name__ == "__main__":
     
     filesName,data,dataCol = parseCSV(r".\data_world")
+
+    #print(filesName)
 
     try:
         data = mergeData(filesName,data,"happiness-cantril-ladder.csv","human-development-index.csv",["Code","Year","Entity"])
