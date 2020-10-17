@@ -6,6 +6,9 @@ import pandas as pd
 import plotly.graph_objs as go
 import plotly
 import plotly.express as px
+import folium
+import geopandas
+import json
 
 import pycountry
 import pycountry_convert as pc
@@ -28,6 +31,9 @@ def init():
     import plotly.graph_objs as go
     import plotly
     import plotly.express as px
+    import folium
+    import geopandas
+    import json
 
     import pycountry
     import pycountry_convert as pc
@@ -89,9 +95,11 @@ def mergeData(names,liData,dataName1,dataName2,join):
 
     joinedData = data1.merge(data2, on=join, how='inner')
 
-    # joinedData["Continent"]=
-
     return joinedData
+
+def correlation(data,value1,value2):
+    data['Cor'] = data[value1]/data[value2]
+    return data
 
 def standardizeData(liData,model="basic"):
     # basic scheme : Entity,Code,Year,data
@@ -125,7 +133,10 @@ def standardizeData(liData,model="basic"):
 
                 if not "Year" in col:
                     for c in range(len(col)):
-                        if isinstance(data[col[c]][0], np.int64):
+                        if(isinstance(data[col[c]][0],datetime.datetime)):
+                            renamer[col[c]] = "Year"
+                            break
+                        elif isinstance(data[col[c]][0], np.int64):
                             code = data[col[c]].apply(lambda x: 1900<x and x<datetime.datetime.now().year)
                             if code.sum() == len(code):
                                 renamer[col[c]] = "Year"
@@ -139,6 +150,35 @@ def continent(data):
     alpha2 = data['Code'].apply(lambda x : pc.country_alpha3_to_country_alpha2(x))
     data['Continent'] = alpha2.apply(lambda x : pc.convert_continent_code_to_continent_name(pc.country_alpha2_to_continent_code(x)))
     return data
+
+def map(data,year,dataName):
+
+    data = data[data['Year'] == year]
+    world_json = json.load(open('./world.json'))
+
+    # Initialize the map:
+    m = folium.Map(location=[39, 2.333333], zoom_start=1.8)
+
+    cho = folium.Choropleth(
+    geo_data=world_json,
+    name='choropleth',
+    data=data,
+    columns=['Code', dataName],
+    key_on='feature.id',
+    fill_color='GnBu',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name=dataName
+    ).add_to(m)
+
+    style_function = "font-size: 15px; font-weight: bold"
+    cho.geojson.add_child(
+        folium.features.GeoJsonTooltip(['name'], style=style_function, labels=False))
+
+    folium.LayerControl().add_to(m)
+
+
+    m.save('map.html')
 
 ###############################################################################################################    
 
@@ -156,11 +196,7 @@ def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
 
     return fig
 
-<<<<<<< HEAD
-def dashBoard(dataf,dataO, years, fig, x, y, coloured=None, hover=None, appl=None):
-=======
 def dashBoard(dataf, dataO, years, fig, x, y, coloured=None, hover=None, appl=None):
->>>>>>> 2ec8875ee33f28360b13903b63c197a861e75c7f
     
     appl.layout = html.Div([
         dcc.Tabs([
@@ -169,13 +205,13 @@ def dashBoard(dataf, dataO, years, fig, x, y, coloured=None, hover=None, appl=No
                                 style={'textAlign': 'center', 'color': '#7FDBFF'}), # (5)
 
                 dcc.Graph(
-                    id='graph1',
+                    id='graph',
                     figure=fig
                 ), # (6)
 
                 html.Label('Year'),
                 dcc.Slider(
-                    id="year-slider",
+                    id="year-slider-graph",
                     min = years[0],
                     max = years[len(years)-1],
                     step = None,
@@ -184,9 +220,19 @@ def dashBoard(dataf, dataO, years, fig, x, y, coloured=None, hover=None, appl=No
                 )
             ]),
 
-            dcc.Tab(label='Tab two', children=[
+            dcc.Tab(label='Histogramme', children=[
                 dcc.Graph(
-                    figure = px.histogram(dataO, x = dataO[y])
+                    id='histo',
+                    figure=px.histogram(dataO, x = dataO[y])
+                ),
+                html.Label('Year'),
+                dcc.Slider(
+                    id="year-slider-histo",
+                    min = years[0],
+                    max = years[len(years)-1],
+                    step = None,
+                    marks={int(i) : str(i) for i in years},
+                    value=years[0]
                 )
 
                 #dcc.RadioItems(
@@ -196,21 +242,46 @@ def dashBoard(dataf, dataO, years, fig, x, y, coloured=None, hover=None, appl=No
                 #)
             ]),
 
-            dcc.Tab(label='Tab three', children=[
-                html.Iframe(id = 'map', srcDoc = open('map.html','r').read(), width = '100%', height = '600')
+            dcc.Tab(label='Carte', children=[
+                html.Iframe(id = 'map', srcDoc = open('map.html','r').read(), width = '100%', height = '600'),
+                # dcc.Graph(
+                #     #id = 'map',
+                #     figure = map(pd.read_csv('./data_world/happiness-cantril-ladder.csv'),2012,x)
+                # ),
+
+                html.Label('Year'),
+                dcc.Slider(
+                    id="year-slider-map",
+                    min = years[0],
+                    max = years[len(years)-1],
+                    step = None,
+                    marks={int(i) : str(i) for i in years},
+                    value=years[0]
+                )
             ]),
         ])
     ])
-    webbrowser.open("http://127.0.0.1:8050/",new=1)
+    
     @appl.callback(
-    Output(component_id='graph1', component_property='figure'), # (1)
-    [Input(component_id='year-slider', component_property='value')] # (2)
+    [Output(component_id='graph', component_property='figure'),
+     Output(component_id='histo', component_property='figure'),
+     Output(component_id='map', component_property='srcDoc')], # (1)
+    [Input(component_id='year-slider-graph', component_property='value'),
+     Input(component_id='year-slider-histo', component_property='value'),
+     Input(component_id='year-slider-map', component_property='value')] # (2)
     )
 
-    def update_figure(input_value): # (3)
-        return px.scatter(dataf[input_value], x=dataf[input_value][x], y=dataf[input_value][y], #data[input_value]
-                        color=dataf[input_value][coloured], #size="pop",
-                        hover_name=dataf[input_value][hover]) # (4)
+    def update(input_graph,input_histo,input_map): # (3)
+        map(dataO,input_map,y)
+        return (
+                px.scatter(dataf[input_graph], x=dataf[input_graph][x], y=dataf[input_graph][y], #data[input_graph]
+                        color=dataf[input_graph][coloured], #size="pop",
+                        hover_name=dataf[input_graph][hover])
+                ,
+                px.histogram(dataO[dataO['Year']==input_histo], x = dataO[y])
+                ,
+                open('map.html','r').read()
+        )
 
 
 ###############################################################################################################
