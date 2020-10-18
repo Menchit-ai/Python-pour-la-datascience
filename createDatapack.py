@@ -236,6 +236,13 @@ def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloure
                     id='histo',
                     figure=px.histogram(datagen[datagen['Year']==diffyearsgen[0]], x = dataCol[genI])
                 ),
+
+                dcc.Dropdown(
+                    id="variables",
+                    options=[{'label' : y, 'value' : y} for y in filesName],
+                    value= filesName[0]
+                ),
+
                 html.Label('Year'),
                 dcc.Slider(
                     id="year-slider-histo",
@@ -244,13 +251,9 @@ def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloure
                     step = None,
                     marks={int(i) : str(i) for i in diffyearsgen},
                     value=diffyearsgen[0]
-                ),
-
-                dcc.RadioItems(
-                    id="variables",
-                    options=[{'label' : y, 'value' : y} for y in filesName],
-                    value= filesName[0]
                 )
+
+                
             ]),
 
             dcc.Tab(label='Carte', children=[
