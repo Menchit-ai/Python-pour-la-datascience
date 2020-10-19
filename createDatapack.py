@@ -200,12 +200,11 @@ def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
 
 def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloured=None, hover=None, appl=None):
 
+    genI = 0
     datagen = mergeData(filesName, datag, filesName[0],"life-expectancy.csv",["Code","Year","Entity"])
     #datagen = continent(datagen)
     diffyearsgen = uniqueYear(datagen, 'Year')
     diffyearsgen.sort()
-    genI = 0
-
     #print(diffyearsgen)
     #print(datagen[datagen['Year']==diffyearsgen[0]])
     
@@ -279,7 +278,9 @@ def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloure
     @appl.callback(
     [Output(component_id='graph', component_property='figure'),
      Output(component_id='histo', component_property='figure'),
-     Output(component_id='map', component_property='srcDoc')], # (1)
+     Output(component_id='map', component_property='srcDoc'),
+     Output('year-slider-histo', 'main'),
+     Output('year-slider-histo', 'max')], # (1)
     [Input(component_id='year-slider-graph', component_property='value'),
      Input(component_id='year-slider-histo', component_property='value'),
      Input(component_id='year-slider-map', component_property='value'),
@@ -302,6 +303,10 @@ def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloure
                 px.histogram(datagen[datagen['Year']==input_histo], x = dataCol[genI])
                 ,
                 open('map.html','r').read()
+                ,
+                diffyearsgen[0]
+                ,
+                diffyearsgen[len(diffyearsgen)-1]
         )
 
 
@@ -309,7 +314,8 @@ def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloure
 
 
 if __name__ == "__main__":
-    
+
+    y = "life-expectancy.csv"
     filesName,data,dataCol = parseCSV(r".\data_world")
 
     #print(filesName)

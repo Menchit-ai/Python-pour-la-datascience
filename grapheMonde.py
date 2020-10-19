@@ -1,11 +1,23 @@
 from createDatapack import *
 
 if __name__ == "__main__":
+
     init()
+    y = "Life expectancy"
+
     filesName,datag,dataCol = parseCSV(r".\data_world")
     print(filesName)
     #print(data)  
     print(dataCol)
+
+    # if y in dataCol :
+    #     filesName.remove(filesName[dataCol.index(y)])
+    #     datag.pop(dataCol.index(y))
+    #     dataCol.remove(y)
+
+    # print(filesName)
+    # #print(data)  
+    # print(dataCol)
 
     try:
         data = mergeData(filesName,datag,"happiness-cantril-ladder.csv","life-expectancy.csv",["Code","Year","Entity"])
@@ -24,7 +36,7 @@ if __name__ == "__main__":
 
     #print(dico[2008])
     x = "Life satisfaction in Cantril Ladder (World Happiness Report 2019)"
-    y = "Life expectancy"
+    #y = "Life expectancy"
 
     #map(data,2012,y)
 
