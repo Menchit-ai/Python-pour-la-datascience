@@ -1,4 +1,6 @@
 import os
+import subprocess
+import sys
 
 import requests
 
@@ -7,7 +9,7 @@ import plotly.graph_objs as go
 import plotly
 import plotly.express as px
 import folium
-#import geopandas
+import geopandas
 import json
 
 import pycountry
@@ -32,7 +34,7 @@ def init():
     import plotly
     import plotly.express as px
     import folium
-    #import geopandas
+    import geopandas
     import json
 
     import pycountry
@@ -46,6 +48,9 @@ def init():
     from dash.dependencies import Input, Output
 
     import webbrowser
+
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 def downloader(urls):
     # attend une liste d'urls
@@ -153,38 +158,43 @@ def continent(data):
     data['Continent'] = alpha2.apply(lambda x : pc.convert_continent_code_to_continent_name(pc.country_alpha2_to_continent_code(x)))
     return data
 
-# def map(data,year,dataName):
+def map(data,year,dataName):
 
-#     data = data[data['Year'] == year]
-#     world_json = json.load(open('./world.json'))
+    bins = list(data[dataName].quantile([0, 0.2, 0.4, 0.6, 0.8,1]))
 
-#     # Initialize the map:
-#     m = folium.Map(location=[39, 2.333333], zoom_start=1.8)
+    data = data[data['Year'] == year]
+    world_json = json.load(open('./world.json'))
 
-#     cho = folium.Choropleth(
-#     geo_data=world_json,
-#     name='choropleth',
-#     data=data,
-#     columns=['Code', dataName],
-#     key_on='feature.id',
-#     fill_color='GnBu',
-#     fill_opacity=0.7,
-#     line_opacity=0.2,
-#     legend_name=dataName
-#     ).add_to(m)
+    
 
-#     style_function = "font-size: 15px; font-weight: bold"
-#     cho.geojson.add_child(
-#         folium.features.GeoJsonTooltip(['name'], style=style_function, labels=False))
+    # Initialize the map:
+    m = folium.Map(location=[39, 2.333333], zoom_start=1.8)
 
-#     folium.LayerControl().add_to(m)
+    cho = folium.Choropleth(
+    geo_data=world_json,
+    name='choropleth',
+    data=data,
+    columns=['Code', dataName],
+    key_on='feature.id',
+    fill_color='GnBu',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name=dataName,
+    bins=bins
+    ).add_to(m)
+
+    style_function = "font-size: 15px; font-weight: bold"
+    cho.geojson.add_child(
+        folium.features.GeoJsonTooltip(['name'], style=style_function, labels=False))
+
+    folium.LayerControl().add_to(m)
 
 
-#     m.save('map.html')
+    m.save('map.html')
 
 ###############################################################################################################    
 
-def uniqueYear(dataf, yearname):
+def uniqueYear(dataf, yearname='Year'):
     return dataf[yearname].unique()
 
 def createDataDic(dataf, yearname, years):
@@ -198,15 +208,18 @@ def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
 
     return fig
 
-def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloured=None, hover=None, appl=None):
+def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None, hover=None, appl=None):
 
     genI = 0
-    datagen = mergeData(filesName, datag, filesName[0],"life-expectancy.csv",["Code","Year","Entity"])
+    datagen = datag[genI]
+    # datagen = mergeData(filesName, datag, filesName[0],"life-expectancy.csv",["Code","Year","Entity"])
     #datagen = continent(datagen)
     diffyearsgen = uniqueYear(datagen, 'Year')
     diffyearsgen.sort()
     #print(diffyearsgen)
     #print(datagen[datagen['Year']==diffyearsgen[0]])
+
+    fileLabelGraph = [{'label' : y, 'value' : y} for y in filesName if not (y=="happiness-cantril-ladder.csv")]
     
     appl.layout = html.Div([
         dcc.Tabs([
@@ -219,15 +232,22 @@ def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloure
                     figure=fig
                 ), # (6)
 
+                dcc.Dropdown(
+                    id="variables_graph",
+                    options=fileLabelGraph,
+                    value= filesName[0]
+                ),
+
                 html.Label('Year'),
                 dcc.Slider(
                     id="year-slider-graph",
-                    min = years[0],
-                    max = years[len(years)-1],
-                    step = None,
+                    min = 2000,
+                    max = 2020,
+                    step = 1,
                     marks={int(i) : str(i) for i in years},
                     value=years[0]
                 )
+
             ]),
 
             dcc.Tab(label='Histogramme', children=[
@@ -237,7 +257,7 @@ def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloure
                 ),
 
                 dcc.Dropdown(
-                    id="variables",
+                    id="variables_histo",
                     options=[{'label' : y, 'value' : y} for y in filesName],
                     value= filesName[0]
                 ),
@@ -245,11 +265,11 @@ def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloure
                 html.Label('Year'),
                 dcc.Slider(
                     id="year-slider-histo",
-                    min = diffyearsgen[0],
-                    max = diffyearsgen[len(diffyearsgen)-1],
-                    step = None,
-                    marks={int(i) : str(i) for i in diffyearsgen},
-                    value=diffyearsgen[0]
+                    min = 2000,
+                    max = 2020,
+                    step = 1,
+                    marks={int(i) : str(i) for i in years},
+                    value=years[0]
                 )
 
                 
@@ -257,20 +277,24 @@ def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloure
 
             dcc.Tab(label='Carte', children=[
                 html.Iframe(id = 'map', srcDoc = open('map.html','r').read(), width = '100%', height = '600'),
-                # dcc.Graph(
-                #     #id = 'map',
-                #     figure = map(pd.read_csv('./data_world/happiness-cantril-ladder.csv'),2012,x)
-                # ),
+
+
+                dcc.Dropdown(
+                    id="variables_map",
+                    options=[{'label' : y, 'value' : y} for y in filesName],
+                    value= filesName[0]
+                ),
 
                 html.Label('Year'),
                 dcc.Slider(
                     id="year-slider-map",
-                    min = years[0],
-                    max = years[len(years)-1],
-                    step = None,
+                    min = 2000,
+                    max = 2020,
+                    step = 1,
                     marks={int(i) : str(i) for i in years},
                     value=years[0]
                 )
+
             ]),
         ])
     ])
@@ -279,63 +303,105 @@ def dashBoard(dataf, dataO, years, fig, x, y, filesName, datag, dataCol, coloure
     [Output(component_id='graph', component_property='figure'),
      Output(component_id='histo', component_property='figure'),
      Output(component_id='map', component_property='srcDoc'),
-     Output('year-slider-histo', 'main'),
-     Output('year-slider-histo', 'max')], # (1)
+     Output(component_id='year-slider-graph', component_property='marks'),
+     Output(component_id='year-slider-histo', component_property='marks'),
+     Output(component_id='year-slider-map', component_property='marks'),
+     Output(component_id='year-slider-graph', component_property='min'),
+     Output(component_id='year-slider-histo', component_property='min'),
+     Output(component_id='year-slider-map', component_property='min'),
+     Output(component_id='year-slider-graph', component_property='max'),
+     Output(component_id='year-slider-histo', component_property='max'),
+     Output(component_id='year-slider-map', component_property='max')],
+      # (1)
     [Input(component_id='year-slider-graph', component_property='value'),
      Input(component_id='year-slider-histo', component_property='value'),
      Input(component_id='year-slider-map', component_property='value'),
-     Input(component_id='variables', component_property='value')] # (2)
+     Input(component_id='variables_graph', component_property='value'),
+     Input(component_id='variables_histo', component_property='value'),
+     Input(component_id='variables_map', component_property='value')] # (2)
     )
 
-    def update(input_graph,input_histo,input_map, fichcsv): # (3)
-        #map(dataO,input_map,y)
-        genI = filesName.index(fichcsv)
-        datagen = mergeData(filesName, datag, filesName[genI],"life-expectancy.csv",["Code","Year","Entity"])
-        #datagen = continent(datagen)
-        diffyearsgen = uniqueYear(datagen, 'Year')
+    def update(input_graph,input_histo,input_map, fichcsv_graph, fichcsv_histo, fichcsv_map): # (3)
+        
+        genI_h = filesName.index(fichcsv_histo)
+        genI_m = filesName.index(fichcsv_map)
+        genI_g = filesName.index(fichcsv_graph)
+
+        data_graph = datag[genI_g]
+        data_histo = datag[genI_h]
+        data_map   = datag[genI_m]
+
+        map(data_map,input_map,dataCol[genI_m])
+        
+        datagen = mergeData(filesName, datag, "happiness-cantril-ladder.csv",filesName[genI_g],["Code","Year","Entity"])
+
+
+        try:
+            datagen = continent(datagen)
+        except:
+            pass
+
+        diffyearsgen_g = uniqueYear(datagen, 'Year')
+        diffyearsgen_g.sort()
+        dico = createDataDic(datagen, 'Year', diffyearsgen_g)
+
+        diffyearsgen = uniqueYear(data_histo, 'Year')
         diffyearsgen.sort()
 
+        years_graph = uniqueYear(datagen)
+        years_histo = uniqueYear(data_histo)
+        years_map = uniqueYear(data_map)
+
+        mm_graph = (years_graph[0],years_graph[-1])
+        mm_histo = (years_histo[0],years_histo[-1])
+        mm_map = (years_map[0],years_map[-1])
+
+        dico_graph = {int(i) : str(i) for i in years_graph}
+        dico_histo = {int(i) : str(i) for i in years_histo}
+        dico_map = {int(i) : str(i) for i in years_map}
+
+        min_g = min(years_graph)
+        min_h = min(years_histo)
+        min_m = min(years_map)
+
+        if min_g < 1980:
+            min_g = 1980
+        if min_h < 1980:
+            min_h = 1980
+        if min_m < 1980:
+            min_m = 1980
+
+        max_g = max(years_graph)
+        max_h = max(years_histo)
+        max_m = max(years_map)
+
         return (
-                px.scatter(dataf[input_graph], x=dataf[input_graph][x], y=dataf[input_graph][y], #data[input_graph]
-                        color=dataf[input_graph][coloured], #size="pop",
-                        hover_name=dataf[input_graph][hover])
+                px.scatter(dico[input_graph], x=dico[input_graph][dataCol[filesName.index("happiness-cantril-ladder.csv")]], y=dico[input_graph][dataCol[genI_g]], #data[input_graph]
+                        color=dico[input_graph]['Continent'], #size="pop",
+                        hover_name=dico[input_graph][hover])
                 ,
-                px.histogram(datagen[datagen['Year']==input_histo], x = dataCol[genI])
+                px.histogram(data_histo[data_histo['Year']==input_histo], x = dataCol[genI_h])
                 ,
                 open('map.html','r').read()
                 ,
-                diffyearsgen[0]
+                dico_graph
                 ,
-                diffyearsgen[len(diffyearsgen)-1]
+                dico_histo
+                ,
+                dico_map
+                ,
+                min_g
+                ,
+                min_h
+                ,
+                min_m
+                ,
+                max_g
+                ,
+                max_h
+                ,
+                max_m
         )
 
 
 ###############################################################################################################
-
-
-if __name__ == "__main__":
-
-    y = "life-expectancy.csv"
-    filesName,data,dataCol = parseCSV(r".\data_world")
-
-    #print(filesName)
-
-    try:
-        data = mergeData(filesName,data,"happiness-cantril-ladder.csv","human-development-index.csv",["Code","Year","Entity"])
-        
-    except NameError as e:
-        print(e)
-        quit()
-
-
-    data.to_csv(r".\data_world\AAAfichier-test.csv",sep=",")
-
-    print("colonnes de base :"+ str(data.columns))
-    print()
-    data = data.rename(columns = {'Code':'ccc','Entity':'eee','Year':'yyy'})
-    print("colonnes renommées :"+ str(data.columns))
-    print()
-    l = standardizeData([data])
-    data = l[0]
-    print("colonnes standardes :"+ str(data.columns))
-
