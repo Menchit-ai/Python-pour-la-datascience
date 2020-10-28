@@ -24,9 +24,11 @@ from dash.dependencies import Input, Output
 
 import webbrowser
 
-def init(): #Fonction qui importe les packages nécessaires
-    import os
+def init():
+    """import all the packages needed in this script."""
 
+    import os
+    import subprocess
     import requests
 
     import pandas as pd
@@ -49,18 +51,31 @@ def init(): #Fonction qui importe les packages nécessaires
 
     import webbrowser
 
-def install(package): #Installe les packages si absent
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
 def downloader(urls):
-    # attend une liste d'urls
+    """Download all files from the urls in the folder data_world.
+
+    Keyword arguments:
+    urls -- list that contains all the urls that you have to download"""
+
     for url in urls:
-        r = requests.get(url, allow_redirects=True)
-        filename = getFilename_fromCd(r.headers.get('content-disposition'))
-        open(r'.\data_world\\'+str(filename), 'wb').write(r.content)
+        try:
+            r = requests.get(url, allow_redirects=True)
+            filename = getFilename_fromCd(r.headers.get('content-disposition'))
+            open(r'.\data_world\\'+str(filename), 'wb').write(r.content)
+        except expression as identifier:
+            return False
+
     return True
 
-def parseCSV(path):
+def parseCSV(path=r".\data_world"):
+    """Used to build 3 lists:
+    -filesname : contains all the files' name
+    -data : contains all the dataframes of the files in the folder
+    -liDataCol : contains the interesting data columns' name of our dataframe
+
+    Keyword arguments:
+    path -- path to the folder that contains all the files to be transforme in dataframe (default : r"./data_world")"""
+    
     if not path.endswith("\\"):
         path = path +"\\"
     filesName = os.listdir(path)
@@ -69,29 +84,25 @@ def parseCSV(path):
         if not fil.endswith(".csv"):
             filesName.remove(fil)
             pathFiles.remove(fil)
-    #donne la liste des tous les fichiers csv présent dans le répertoire indiqué par path
 
     data = []
     liDataCol = []
     for i in range(len(pathFiles)):
         data.append(pd.read_csv(pathFiles[i],delimiter=","))
         liDataCol.append(str(data[i].columns[-1]))
-    #data est la liste des dataframes correpondant aux csv présent dans le répertoire
-    #liDataCol = []
-    #for d in data:
-        #liDataCol.append(str(d.columns[-1]))
-    #liDataCol est la liste contenant les noms des colonnes de chaque dataframe avec la donnée intéressante
+
     return (filesName,data,liDataCol)
 
-def getDataCol(liData):
-    liDataCol = []
-    for data in liData:
-        liDataCol.append(str(data.columns[-1]))
-    #On récupère toutes les colonnes spécifiques de chaque dataframe (autre que Entity, Code, Year)
-    return liDataCol
-
 def mergeData(names,liData,dataName1,dataName2,join):
-    
+    """Merged 2 dataframes on the given name, used an inner join :
+
+    Keyword arguments:
+    names -- list containing all files' name
+    liData -- list containing all dataframes that are used
+    dataName1 -- name of the firt dataframe to be merged
+    dataName2 -- name of the second dataframe to be merged
+    join -- name of the column to be used as join"""
+
     if not (dataName1 in names or dataName2 in names):
         raise NameError("These dataNames are not available in this list of dataframe")
 
@@ -102,16 +113,27 @@ def mergeData(names,liData,dataName1,dataName2,join):
         raise NameError("Cannot join the dataframe, join name is absent from at least one of them")
 
     joinedData = data1.merge(data2, on=join, how='inner')
-    #On rassemble les deux dataframes par rapport à Entity, Code, et Year
 
     return joinedData
 
 def correlation(data,value1,value2):
+    """Create a new column in data that is the correlation between two variables :
+
+    Keyword arguments:
+    data -- dataframe that contains the two variables
+    value1 -- first variable to be used in the calculation
+    value2 -- second variable to be used in the calculation"""
+
     data['Cor'] = data[value1]/data[value2]
     return data
 
-def standardizeData(liData,model="basic"): #Renomme correctement les colonnes
-    # basic scheme : Entity,Code,Year,data
+def standardizeData(liData,model="basic"):
+    """Transform dataframes and change it columns' name by using a scheme :
+
+    Keyword arguments:
+    liData -- list containing all the dataframes
+    model -- contains the name of the columns to be used (default : "basic")"""
+
 
     stdData = []
 
@@ -155,28 +177,44 @@ def standardizeData(liData,model="basic"): #Renomme correctement les colonnes
 
     return stdData
 
-def continent(data): #Pour pouvoir trier en fonction du continent (et non en fonction du pays)
-    alpha2 = data['Code'].apply(lambda x : pc.country_alpha3_to_country_alpha2(x)) #On utilise la colonne Code pour assembler les pays entre-eux
+def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
+
+    fig = px.scatter(data_dic[yearnumber], x=data_dic[yearnumber][x], y=data_dic[yearnumber][y], #data[input_value]
+                        color=data_dic[yearnumber][coloured], #size="pop",
+                        hover_name=data_dic[yearnumber][hover])
+
+    return fig
+
+def continent(data):
+    """Create a new column in the dataframe that contains the continent corresponding to the country in the dataframe :
+
+    Keyword arguments:
+    data -- dataframe to be used"""
+
+    alpha2 = data['Code'].apply(lambda x : pc.country_alpha3_to_country_alpha2(x))
     data['Continent'] = alpha2.apply(lambda x : pc.convert_continent_code_to_continent_name(pc.country_alpha2_to_continent_code(x)))
     return data
 
-def map(data,year,dataName): #Produit la map pour le dashboard
+def map(data,year,dataName):
+    """Generate a map in a "map.html" file, these map is worldwide and contains the values in the current dataframe :
 
-    bins = list(data[dataName].quantile([0, 0.2, 0.4, 0.6, 0.8, 1]))
+    Keyword arguments:
+    data -- dataframe to be used
+    year -- year used to filter the data and use only this year
+    dataName -- name of the column containing the values"""
+
+    bins = list(data[dataName].quantile([0, 0.2, 0.4, 0.6, 0.8,1]))
 
     data = data[data['Year'] == year]
     world_json = json.load(open('./world.json'))
 
-    
-
-    # Initialize the map:
     m = folium.Map(location=[39, 2.333333], zoom_start=1.8)
 
-    cho = folium.Choropleth( #Carte choroplèthe
+    cho = folium.Choropleth(
     geo_data=world_json,
     name='choropleth',
     data=data,
-    columns=['Code', dataName], #dataName correspond à la donnée qu'on veut comparer entre les pays
+    columns=['Code', dataName],
     key_on='feature.id',
     fill_color='GnBu',
     fill_opacity=0.7,
@@ -191,36 +229,50 @@ def map(data,year,dataName): #Produit la map pour le dashboard
 
     folium.LayerControl().add_to(m)
 
-
     m.save('map.html')
+    return True
 
-###############################################################################################################    
+def uniqueYear(data, yearname='Year'):
+    """Return a list containing all the unique years in the given dataframe :
 
-def uniqueYear(dataf, yearname='Year'): #Retourne les années uniques d'une même colonne Year
-    return dataf[yearname].unique()
+    Keyword arguments:
+    data -- dataframe to be used
+    yearname -- name of the column containing the years (default : "Year")"""
 
-def createDataDic(dataf, yearname, years): #Crée un dictionnaire à partir de la dataframe pour tracer les graphes
-    return {year:dataf.query(yearname + " == @year") for year in years}
+    return data[yearname].unique()
 
-def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None): #Création de graphe avec plotly express et avec un dictionnaire
+def createDataDic(data, years, yearname="Year"):
+    """Return a dictionnary containing all the years in the given dataframe associated with the data for each year:
 
-    fig = px.scatter(data_dic[yearnumber], x=data_dic[yearnumber][x], y=data_dic[yearnumber][y], #data[input_value]
-                        color=data_dic[yearnumber][coloured], #size="pop",
-                        hover_name=data_dic[yearnumber][hover])
+    Keyword arguments:
+    data -- dataframe to be used
+    years -- list containing all the years to build the dictionnary with
+    yearname -- name of the column containing the years (default : "Year")"""
 
-    return fig
+    return {year:data.query(yearname + " == @year") for year in years}
 
-def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None, hover=None, appl=None): #Création du dahsboard
+def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None, hover=None, appl=None):
+  #dashBoard(dico, data, diffyears, fig, filesName, datag, dataCol, 'Continent', 'Entity', appl=app)
+    """Used to build the dashboard and run it
 
+    Keyword arguments:
+    dataf -- dictionnary containing year sorted data for the initializing dataframe
+    dataO -- dataframe used to initialize the dashboard with it
+    years -- list of all unique years in the initializing dataframe
+    fig -- graph to plot with the initializing data
+    filesName -- list containing all files' name
+    datag -- list containing all dataframes
+    dataCol -- list containing all data's column's name
+    coloured -- what parameters used to colour graphics (default : None)
+    hover -- what value to print when you look at specific point in the graphic (default : None)
+    appl -- object containing the HTML part (default : None)
+    """
     genI = 0
     datagen = datag[genI]
     diffyearsgen = uniqueYear(datagen, 'Year')
     diffyearsgen.sort()
-    #Pour changer la donnée à comparer, on change de fichier, donc on change la dataframe dans le callback
 
     fileLabelGraph = [{'label' : y, 'value' : y} for y in filesName if not (y=="happiness-cantril-ladder.csv")]
-    #Comme on compare les différentes données avec les données de bonheur dans le monde, 
-    #on veut retirer la possibilité de merge ce fichier avec lui-même
     
     appl.layout = html.Div([
         dcc.Tabs([
@@ -232,7 +284,7 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
                 dcc.Graph(
                     id='graph',
                     figure=fig
-                ), # (6)
+                ),
 
                 dcc.Dropdown(
                     id="variables_graph",
@@ -241,7 +293,7 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
                 ),
 
                 html.Label('Year'),
-                dcc.Slider(#Le Slider permet de sélectionner l'année
+                dcc.Slider(
                     id="year-slider-graph",
                     min = 2000,
                     max = 2020,
@@ -250,7 +302,7 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
                     value=years[0]
                 )
 
-            ]),#Premier onglet qui contient une comparaison entre cette statistique et une donnée choisie dans le Dropdown
+            ]),
 
             dcc.Tab(label='Histogramme', children=[
                 dcc.Graph(
@@ -275,7 +327,7 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
                 )
 
                 
-            ]),#Deuxième onglet avec un histogramme pour une donnée choisie
+            ]),
 
             dcc.Tab(label='Carte', children=[
                 html.Iframe(id = 'map', srcDoc = open('map.html','r').read(), width = '100%', height = '600'),
@@ -297,7 +349,7 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
                     value=years[0]
                 )
 
-            ]),#Troisième onglet avec une map chroplète pour une donnée choisie
+            ]),
         ])
     ])
     
@@ -308,31 +360,23 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
      Output(component_id='year-slider-graph', component_property='marks'),
      Output(component_id='year-slider-histo', component_property='marks'),
      Output(component_id='year-slider-map', component_property='marks'),
-
      Output(component_id='year-slider-graph', component_property='min'),
      Output(component_id='year-slider-histo', component_property='min'),
      Output(component_id='year-slider-map', component_property='min'),
-
      Output(component_id='year-slider-graph', component_property='max'),
      Output(component_id='year-slider-histo', component_property='max'),
      Output(component_id='year-slider-map', component_property='max'),
      Output(component_id='TitreGraphe', component_property='children')],
-      #Pour le fonctionnement du slider, on doit le rafraîchir à chaque fois qu'on change de csv (donc les marks, min et max)
+     #Pour le fonctionnement du slider, on doit le rafraîchir à chaque fois qu'on change de csv (donc les marks, min et max)
     [Input(component_id='year-slider-graph', component_property='value'),
      Input(component_id='year-slider-histo', component_property='value'),
      Input(component_id='year-slider-map', component_property='value'),
-     #On modifie l'affichage selon l'année unique choisie
      Input(component_id='variables_graph', component_property='value'),
      Input(component_id='variables_histo', component_property='value'),
      Input(component_id='variables_map', component_property='value')]
-     #les id variables font références aux trois Dropdown qui montrent le fichier choisi
     )
 
-    def update(input_graph,input_histo,input_map, fichcsv_graph, fichcsv_histo, fichcsv_map):
-
-        #On rafraîchit les trois onglets, donc la dataframe, le merge pour le graphe, les dico pour les sliders
-        #et on doit en créer trois chacun pour les trois onglets
-        #donc dans le callback, on stocke trois dataframes, trois dictionnaires, trois min et trois max
+    def update(input_graph,input_histo,input_map, fichcsv_graph, fichcsv_histo, fichcsv_map): 
         
         genI_h = filesName.index(fichcsv_histo)
         genI_m = filesName.index(fichcsv_map)
@@ -354,7 +398,7 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
 
         diffyearsgen_g = uniqueYear(datagen, 'Year')
         diffyearsgen_g.sort()
-        dico = createDataDic(datagen, 'Year', diffyearsgen_g)
+        dico = createDataDic(datagen, diffyearsgen_g, 'Year')
 
         diffyearsgen = uniqueYear(data_histo, 'Year')
         diffyearsgen.sort()
@@ -363,9 +407,9 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
         years_histo = uniqueYear(data_histo)
         years_map = uniqueYear(data_map)
 
-        #mm_graph = (years_graph[0],years_graph[-1])
-        #mm_histo = (years_histo[0],years_histo[-1])
-        #mm_map = (years_map[0],years_map[-1])
+        mm_graph = (years_graph[0],years_graph[-1])
+        mm_histo = (years_histo[0],years_histo[-1])
+        mm_map = (years_map[0],years_map[-1])
 
         dico_graph = {int(i) : str(i) for i in years_graph}
         dico_histo = {int(i) : str(i) for i in years_histo}
@@ -381,8 +425,6 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
             min_h = 1980
         if min_m < 1980:
             min_m = 1980
-        #Certaines de nos données vont jusqu'au XIXème siècle, ce qui rend le Slider illisible
-        #De plus que ces données ne peuvent pas être comparées à la statistique de bonheur
 
         max_g = max(years_graph)
         max_h = max(years_histo)
@@ -390,24 +432,24 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
 
         return (
                 px.scatter(dico[input_graph], x=dico[input_graph][dataCol[filesName.index("happiness-cantril-ladder.csv")]], y=dico[input_graph][dataCol[genI_g]], #data[input_graph]
-                        color=dico[input_graph]['Continent'], #size="pop",
+                        color=dico[input_graph][coloured],
                         hover_name=dico[input_graph][hover])
                 ,
                 px.histogram(data_histo[data_histo['Year']==input_histo], x = dataCol[genI_h])
                 ,
-                open('map.html','r').read() #Les trois éléments à afficher
+                open('map.html','r').read()
                 ,
                 dico_graph
                 ,
                 dico_histo
                 ,
-                dico_map #Les trois dictionnaires pour les trois Sliders
+                dico_map
                 ,
                 min_g
                 ,
                 min_h
                 ,
-                min_m #Les trois minima
+                min_m
                 ,
                 max_g
                 ,
@@ -417,6 +459,3 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
                 ,
                 f'Life Satisfaction vs {dataCol[genI_g]}' #Pour rafraîchir le titre du graphe
         )
-
-
-###############################################################################################################
