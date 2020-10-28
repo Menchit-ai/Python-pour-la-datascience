@@ -25,8 +25,10 @@ from dash.dependencies import Input, Output
 import webbrowser
 
 def init():
-    import os
+    """import all the packages needed in this script."""
 
+    import os
+    import subprocess
     import requests
 
     import pandas as pd
@@ -49,18 +51,31 @@ def init():
 
     import webbrowser
 
-def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
 def downloader(urls):
-    # attend une liste d'urls
+    """Download all files from the urls in the folder data_world.
+
+    Keyword arguments:
+    urls -- list that contains all the urls that you have to download"""
+
     for url in urls:
-        r = requests.get(url, allow_redirects=True)
-        filename = getFilename_fromCd(r.headers.get('content-disposition'))
-        open(r'.\data_world\\'+str(filename), 'wb').write(r.content)
+        try:
+            r = requests.get(url, allow_redirects=True)
+            filename = getFilename_fromCd(r.headers.get('content-disposition'))
+            open(r'.\data_world\\'+str(filename), 'wb').write(r.content)
+        except expression as identifier:
+            return False
+
     return True
 
-def parseCSV(path):
+def parseCSV(path=r".\data_world"):
+    """Used to build 3 lists:
+    -filesname : contains all the files' name
+    -data : contains all the dataframes of the files in the folder
+    -liDataCol : contains the interesting data columns' name of our dataframe
+
+    Keyword arguments:
+    path -- path to the folder that contains all the files to be transforme in dataframe (default : r"./data_world")"""
+    
     if not path.endswith("\\"):
         path = path +"\\"
     filesName = os.listdir(path)
@@ -69,28 +84,25 @@ def parseCSV(path):
         if not fil.endswith(".csv"):
             filesName.remove(fil)
             pathFiles.remove(fil)
-    #donne la liste des tous les fichiers csv présent dans le répertoire indiqué par path
 
     data = []
     liDataCol = []
     for i in range(len(pathFiles)):
         data.append(pd.read_csv(pathFiles[i],delimiter=","))
         liDataCol.append(str(data[i].columns[-1]))
-    #data est la liste des dataframes correpondant aux csv présent dans le répertoire
-    #liDataCol = []
-    #for d in data:
-        #liDataCol.append(str(d.columns[-1]))
-    #liDataCol est la liste contenant les noms des colonnes de chaque dataframe avec la donnée intéressante
+
     return (filesName,data,liDataCol)
 
-def getDataCol(liData):
-    liDataCol = []
-    for data in liData:
-        liDataCol.append(str(data.columns[-1]))
-    return liDataCol
-
 def mergeData(names,liData,dataName1,dataName2,join):
-    
+    """Merged 2 dataframes on the given name, used an inner join :
+
+    Keyword arguments:
+    names -- list containing all files' name
+    liData -- list containing all dataframes that are used
+    dataName1 -- name of the firt dataframe to be merged
+    dataName2 -- name of the second dataframe to be merged
+    join -- name of the column to be used as join"""
+
     if not (dataName1 in names or dataName2 in names):
         raise NameError("These dataNames are not available in this list of dataframe")
 
@@ -105,11 +117,23 @@ def mergeData(names,liData,dataName1,dataName2,join):
     return joinedData
 
 def correlation(data,value1,value2):
+    """Create a new column in data that is the correlation between two variables :
+
+    Keyword arguments:
+    data -- dataframe that contains the two variables
+    value1 -- first variable to be used in the calculation
+    value2 -- second variable to be used in the calculation"""
+
     data['Cor'] = data[value1]/data[value2]
     return data
 
 def standardizeData(liData,model="basic"):
-    # basic scheme : Entity,Code,Year,data
+    """Transform dataframes and change it columns' name by using a scheme :
+
+    Keyword arguments:
+    liData -- list containing all the dataframes
+    model -- contains the name of the columns to be used (default : "basic")"""
+
 
     stdData = []
 
@@ -153,21 +177,37 @@ def standardizeData(liData,model="basic"):
 
     return stdData
 
+def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
+
+    fig = px.scatter(data_dic[yearnumber], x=data_dic[yearnumber][x], y=data_dic[yearnumber][y], #data[input_value]
+                        color=data_dic[yearnumber][coloured], #size="pop",
+                        hover_name=data_dic[yearnumber][hover])
+
+    return fig
+
 def continent(data):
+    """Create a new column in the dataframe that contains the continent corresponding to the country in the dataframe :
+
+    Keyword arguments:
+    data -- dataframe to be used"""
+
     alpha2 = data['Code'].apply(lambda x : pc.country_alpha3_to_country_alpha2(x))
     data['Continent'] = alpha2.apply(lambda x : pc.convert_continent_code_to_continent_name(pc.country_alpha2_to_continent_code(x)))
     return data
 
 def map(data,year,dataName):
+    """Generate a map in a "map.html" file, these map is worldwide and contains the values in the current dataframe :
+
+    Keyword arguments:
+    data -- dataframe to be used
+    year -- year used to filter the data and use only this year
+    dataName -- name of the column containing the values"""
 
     bins = list(data[dataName].quantile([0, 0.2, 0.4, 0.6, 0.8,1]))
 
     data = data[data['Year'] == year]
     world_json = json.load(open('./world.json'))
 
-    
-
-    # Initialize the map:
     m = folium.Map(location=[39, 2.333333], zoom_start=1.8)
 
     cho = folium.Choropleth(
@@ -189,48 +229,61 @@ def map(data,year,dataName):
 
     folium.LayerControl().add_to(m)
 
-
     m.save('map.html')
+    return True
 
-###############################################################################################################    
+def uniqueYear(data, yearname='Year'):
+    """Return a list containing all the unique years in the given dataframe :
 
-def uniqueYear(dataf, yearname='Year'):
-    return dataf[yearname].unique()
+    Keyword arguments:
+    data -- dataframe to be used
+    yearname -- name of the column containing the years (default : "Year")"""
 
-def createDataDic(dataf, yearname, years):
-    return {year:dataf.query(yearname + " == @year") for year in years}
+    return data[yearname].unique()
 
-def createFig(data_dic, yearnumber, x, y, coloured=None, hover=None):
+def createDataDic(data, years, yearname="Year"):
+    """Return a dictionnary containing all the years in the given dataframe associated with the data for each year:
 
-    fig = px.scatter(data_dic[yearnumber], x=data_dic[yearnumber][x], y=data_dic[yearnumber][y], #data[input_value]
-                        color=data_dic[yearnumber][coloured], #size="pop",
-                        hover_name=data_dic[yearnumber][hover])
+    Keyword arguments:
+    data -- dataframe to be used
+    years -- list containing all the years to build the dictionnary with
+    yearname -- name of the column containing the years (default : "Year")"""
 
-    return fig
+    return {year:data.query(yearname + " == @year") for year in years}
 
 def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None, hover=None, appl=None):
+  #dashBoard(dico, data, diffyears, fig, filesName, datag, dataCol, 'Continent', 'Entity', appl=app)
+    """Used to build the dashboard and run it
 
+    Keyword arguments:
+    dataf -- dictionnary containing year sorted data for the initializing dataframe
+    dataO -- dataframe used to initialize the dashboard with it
+    years -- list of all unique years in the initializing dataframe
+    fig -- graph to plot with the initializing data
+    filesName -- list containing all files' name
+    datag -- list containing all dataframes
+    dataCol -- list containing all data's column's name
+    coloured -- what parameters used to colour graphics (default : None)
+    hover -- what value to print when you look at specific point in the graphic (default : None)
+    appl -- object containing the HTML part (default : None)
+    """
     genI = 0
     datagen = datag[genI]
-    # datagen = mergeData(filesName, datag, filesName[0],"life-expectancy.csv",["Code","Year","Entity"])
-    #datagen = continent(datagen)
     diffyearsgen = uniqueYear(datagen, 'Year')
     diffyearsgen.sort()
-    #print(diffyearsgen)
-    #print(datagen[datagen['Year']==diffyearsgen[0]])
 
     fileLabelGraph = [{'label' : y, 'value' : y} for y in filesName if not (y=="happiness-cantril-ladder.csv")]
     
     appl.layout = html.Div([
         dcc.Tabs([
             dcc.Tab(label='Graphe', children=[
-                html.H1(children=f'Titre',   #{year}
-                                style={'textAlign': 'center', 'color': '#7FDBFF'}), # (5)
+                html.H1(children=f'Titre',
+                                style={'textAlign': 'center', 'color': '#7FDBFF'}),
 
                 dcc.Graph(
                     id='graph',
                     figure=fig
-                ), # (6)
+                ),
 
                 dcc.Dropdown(
                     id="variables_graph",
@@ -312,16 +365,16 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
      Output(component_id='year-slider-graph', component_property='max'),
      Output(component_id='year-slider-histo', component_property='max'),
      Output(component_id='year-slider-map', component_property='max')],
-      # (1)
+     
     [Input(component_id='year-slider-graph', component_property='value'),
      Input(component_id='year-slider-histo', component_property='value'),
      Input(component_id='year-slider-map', component_property='value'),
      Input(component_id='variables_graph', component_property='value'),
      Input(component_id='variables_histo', component_property='value'),
-     Input(component_id='variables_map', component_property='value')] # (2)
+     Input(component_id='variables_map', component_property='value')]
     )
 
-    def update(input_graph,input_histo,input_map, fichcsv_graph, fichcsv_histo, fichcsv_map): # (3)
+    def update(input_graph,input_histo,input_map, fichcsv_graph, fichcsv_histo, fichcsv_map): 
         
         genI_h = filesName.index(fichcsv_histo)
         genI_m = filesName.index(fichcsv_map)
@@ -343,7 +396,7 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
 
         diffyearsgen_g = uniqueYear(datagen, 'Year')
         diffyearsgen_g.sort()
-        dico = createDataDic(datagen, 'Year', diffyearsgen_g)
+        dico = createDataDic(datagen, diffyearsgen_g, 'Year')
 
         diffyearsgen = uniqueYear(data_histo, 'Year')
         diffyearsgen.sort()
@@ -377,7 +430,7 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
 
         return (
                 px.scatter(dico[input_graph], x=dico[input_graph][dataCol[filesName.index("happiness-cantril-ladder.csv")]], y=dico[input_graph][dataCol[genI_g]], #data[input_graph]
-                        color=dico[input_graph]['Continent'], #size="pop",
+                        color=dico[input_graph][coloured],
                         hover_name=dico[input_graph][hover])
                 ,
                 px.histogram(data_histo[data_histo['Year']==input_histo], x = dataCol[genI_h])
@@ -402,6 +455,3 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
                 ,
                 max_m
         )
-
-
-###############################################################################################################
