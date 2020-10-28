@@ -225,7 +225,8 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
     appl.layout = html.Div([
         dcc.Tabs([
             dcc.Tab(label='Graphe', children=[
-                html.H1(children=f'Titre',   #{year}
+                html.H1(id="TitreGraphe",
+                        children=f'Life Satisfactiuon vs {dataCol[0]}',   #{year}
                                 style={'textAlign': 'center', 'color': '#7FDBFF'}), # (5)
 
                 dcc.Graph(
@@ -314,7 +315,8 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
 
      Output(component_id='year-slider-graph', component_property='max'),
      Output(component_id='year-slider-histo', component_property='max'),
-     Output(component_id='year-slider-map', component_property='max')],
+     Output(component_id='year-slider-map', component_property='max'),
+     Output(component_id='TitreGraphe', component_property='children')],
       #Pour le fonctionnement du slider, on doit le rafraîchir à chaque fois qu'on change de csv (donc les marks, min et max)
     [Input(component_id='year-slider-graph', component_property='value'),
      Input(component_id='year-slider-histo', component_property='value'),
@@ -412,6 +414,8 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
                 max_h
                 ,
                 max_m #Les trois maxima
+                ,
+                f'Life Satisfaction vs {dataCol[genI_g]}' #Pour rafraîchir le titre du graphe
         )
 
 
