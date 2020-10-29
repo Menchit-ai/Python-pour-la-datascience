@@ -58,6 +58,10 @@ main.py .
 
 **Analyse des résultats :**
 
+
+L'objectif de notre projet était de comprendre ce qui pouvait rendre la population d'un pays à être heureuse. Pour déterminer cela nous avons utilsé la "Life satisfaction in Cantril Ladder"
+Cette échelle allant de 0 à 10 permet de classifier les pays du monde en prenant 10 comme le maximum de bonheur et 0 comme le minimum. On peut donc considérer un pays ayant un score de 5
+comme moyennement heureux, en dessous de 5, le pays se rapproche d'un état de malheur, et, à l'inverse, en se rapprochant de 10, un pays se rapproche d'un état de bonheur.
 Avec les fichiers que nous avons choisis d'utiliser, nous pouvons montrer des corrélations entre différents critères. En exploitant les graphiques du premier onglet de notre
 dashboard, on peut tenter de définir une courbe des tendances entre la variable étudiée et la variable principale que nous utilisons : la satisfaction de vie (le bonheur dans un pays).
 Nous pouvons ainsi montrer que la bonheur dans un pays est impacté par plusieurs critères. Il est fortement impacté négativement par le nombre d'heures de travail et est faiblement impacté
