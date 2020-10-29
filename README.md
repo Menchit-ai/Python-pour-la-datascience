@@ -41,7 +41,8 @@ problèmes d'installation (notamment pour geopandas qui peut causer quelques sou
 Si des problèmes subisistent, les diverses commandes d'installation via Anaconda peuvent être trouvées sur le site Anaconda.org .
 
 Le dashboard devrait s'ouvrir automatiquement au lancement du main.py, normalement il s'ouvrira deux fois, si le dashboard ne s'ouvre pas automatique, utiliser l'url suivante : "http://127.0.0.1:8050/"
-
+Le dashboard peut continuer d'ouvrir de lui-même, ce bug n'a pas été résolu mais n'impacte pas le fonctionnement du dashboard. Si ce bug est trop  impactant, il suffit de commenter
+la ligne 26 du main.py et d'ouvrir le dashboard manuellement en utilisant l'url ci-dessus.
 
 
 **Developper's Guide :**
@@ -55,8 +56,14 @@ main.py .
 
 
 
+**Analyse des résultats :**
 
-
-
+Avec les fichiers que nous avons choisis d'utiliser, nous pouvons montrer des corrélations entre différents critères. En exploitant les graphiques du premier onglet de notre
+dashboard, on peut tenter de définir une courbe des tendances entre la variable étudiée et la variable principale que nous utilisons : la satisfaction de vie (le bonheur dans un pays).
+Nous pouvons ainsi montrer que la bonheur dans un pays est impacté par plusieurs critères. Il est fortement impacté négativement par le nombre d'heures de travail et est faiblement impacté
+positivement par la liberté économique du pays. Il est fortement impacté par l'espérance de vie moyenne dans un pays. On voit ensuite que l'indice de développement humain est fortement corrélé
+au niveau de bonheur. On en déduit donc que le PIB par habitant, l'espérance de vie à la naissance et le niveau d'éducation des enfants de 17 ans et plus impactent tous fortement le niveau
+de satisfaction d'un pays. On voit aussi que le régime politique n'impact pas le niveau de satisfaction d'un pays. Enfin la consommation d'énergie d'un Etat impact peu la satisfaction
+(même si visiblement plus la consommation est élevée plus le pays est considéré comme heureux).
 
 
