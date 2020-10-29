@@ -40,6 +40,8 @@ on peut installer tous les packages avec la commande *pip install XXX* où XXX e
 problèmes d'installation (notamment pour geopandas qui peut causer quelques soucis), on peut utiliser la commande *conda install XXX* dans l'Anaconda Prompt.
 Si des problèmes subisistent, les diverses commandes d'installation via Anaconda peuvent être trouvées sur le site Anaconda.org .
 
+Le dashboard devrait s'ouvrir automatiquement au lancement du main.py, normalement il s'ouvrira deux fois, si le dashboard ne s'ouvre pas automatique, utiliser l'url suivante : "http://127.0.0.1:8050/"
+
 
 
 **Developper's Guide :**
@@ -48,7 +50,8 @@ Si des problèmes subisistent, les diverses commandes d'installation via Anacond
 Le programme fonctionne en utilisant les fichiers csv se trouvant dans le dossier donné en "path" dans la fonction parseCSV, les colonnes des dataframes doivent ensuite être
 de la forme [noms de pays, code ascii2 du pays, année de la donnée, valeur de la donnée], il suffit ensuite de passer la liste des dataframes à la fonction standardizeData qui
 va renommer les colonnes et les mettre dans le bon ordre pour rendre les dataframes exploitables pour la suite. Tous les dataframes sont ensuite pris en compte et utilisables
-dans le dashboard. Toutes les fonctions utilisées sont présentes de le fichier createDatapack.py .
+dans le dashboard. Toutes les fonctions utilisées sont présentes de le fichier createDatapack.py . Actuellement la mise en forme des dataframes est faite directement dans le fichier
+main.py .
 
 
 
