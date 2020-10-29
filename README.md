@@ -14,7 +14,7 @@ Ce projet a pour but d'intégrer dans un dashboard trois éléments graphiques p
 -Une carte choroplète qui montre les différents niveaux de données dans chaque pays pour une année choisie
 
 
-Lien du dataset :
+Lien du dataset : https://ourworldindata.org/
 
 
 **User's Guide :**
@@ -35,10 +35,21 @@ Pour avoir le dashboard décrit ci-dessus, il faut exécuter le fichier Python m
 Différents packages sont utilisés pour les deux fichiers Python : os, requests, pandas, plotly et plotly.express, numpy, datetime folium, 
 geopandas, json, pycountry, dash, dash corecomponents, dash htmlcomponents, webbrowser.
 
-Normalement, l'installation de ces packages se fait automatiquement grâce au fichier install.py. Pour cette fonction il faut installer
-subprocess (pip install subprocess). Si l'installation ne marche pas, on peut installer tous les packages avec la commande *pip install*. S'il y a encore des
-problèmes d'installation (notamment pour geopandas qui peut causer quelques soucis), on peut utiliser la commande *conda install* dans l'Anaconda Prompt.
-Cependant, avoir Anaconda est nécessaire pour ce type de commande.
+L'installation de ces packages se fait automatiquement en exécutant le fichier install.py via la commande "python install.py". Si l'installation ne fonctionne pas, 
+on peut installer tous les packages avec la commande *pip install XXX* où XXX est le nom du package en question. S'il y a encore des
+problèmes d'installation (notamment pour geopandas qui peut causer quelques soucis), on peut utiliser la commande *conda install XXX* dans l'Anaconda Prompt.
+Si des problèmes subisistent, les diverses commandes d'installation via Anaconda peuvent être trouvées sur le site Anaconda.org .
+
+
+
+**Developper's Guide :**
+
+
+Le programme fonctionne en utilisant les fichiers csv se trouvant dans le dossier donné en "path" dans la fonction parseCSV, les colonnes des dataframes doivent ensuite être
+de la forme [noms de pays, code ascii2 du pays, année de la donnée, valeur de la donnée], il suffit ensuite de passer la liste des dataframes à la fonction standardizeData qui
+va renommer les colonnes et les mettre dans le bon ordre pour rendre les dataframes exploitables pour la suite. Tous les dataframes sont ensuite pris en compte et utilisables
+dans le dashboard. Toutes les fonctions utilisées sont présentes de le fichier createDatapack.py .
+
 
 
 
