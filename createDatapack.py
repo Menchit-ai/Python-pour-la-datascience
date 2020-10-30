@@ -116,17 +116,6 @@ def mergeData(names,liData,dataName1,dataName2,join):
 
     return joinedData
 
-def correlation(data,value1,value2):
-    """Create a new column in data that is the correlation between two variables :
-
-    Keyword arguments:
-    data -- dataframe that contains the two variables
-    value1 -- first variable to be used in the calculation
-    value2 -- second variable to be used in the calculation"""
-
-    data['Cor'] = data[value1]/data[value2]
-    return data
-
 def standardizeData(liData,model="basic"):
     """Transform dataframes and change it columns' name by using a scheme :
 
