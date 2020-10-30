@@ -41,7 +41,7 @@ problèmes d'installation (notamment pour geopandas qui peut causer quelques sou
 Si des problèmes subisistent, les diverses commandes d'installation via Anaconda peuvent être trouvées sur le site Anaconda.org .
 
 Le dashboard devrait s'ouvrir automatiquement au lancement du main.py, normalement il s'ouvrira deux fois, si le dashboard ne s'ouvre pas automatique, utiliser l'url suivante : "http://127.0.0.1:8050/"
-Le dashboard peut continuer d'ouvrir de lui-même, ce bug n'a pas été résolu mais n'impacte pas le fonctionnement du dashboard. Si ce bug est trop  impactant, il suffit de commenter
+Le dashboard peut continuer de s'ouvrir de lui-même, ce bug n'a pas été résolu mais n'impacte pas le fonctionnement du dashboard. Si ce bug est trop impactant, il suffit de commenter
 la ligne 26 du main.py et d'ouvrir le dashboard manuellement en utilisant l'url ci-dessus.
 
 
@@ -49,10 +49,11 @@ la ligne 26 du main.py et d'ouvrir le dashboard manuellement en utilisant l'url 
 
 
 Le programme fonctionne en utilisant les fichiers csv se trouvant dans le dossier donné en "path" dans la fonction parseCSV, les colonnes des dataframes doivent ensuite être
-de la forme [noms de pays, code ascii2 du pays, année de la donnée, valeur de la donnée], il suffit ensuite de passer la liste des dataframes à la fonction standardizeData qui
-va renommer les colonnes et les mettre dans le bon ordre pour rendre les dataframes exploitables pour la suite. Tous les dataframes sont ensuite pris en compte et utilisables
-dans le dashboard. Toutes les fonctions utilisées sont présentes de le fichier createDatapack.py . Actuellement la mise en forme des dataframes est faite directement dans le fichier
-main.py .
+de la forme [noms des pays, code ascii2 du pays, année de la donnée, valeur de la donnée], il suffit ensuite de passer la liste des dataframes à la fonction standardizeData qui
+va renommer les colonnes et les mettre dans le bon ordre pour rendre les dataframes exploitables pour la suite. 
+
+Tous les dataframes sont ensuite pris en compte et utilisables dans le dashboard. Toutes les fonctions utilisées sont présentes de le fichier createDatapack.py. 
+Actuellement, la mise en forme des dataframes est faite directement dans le fichier main.py.
 
 
 
@@ -61,13 +62,16 @@ main.py .
 
 L'objectif de notre projet était de comprendre ce qui pouvait rendre la population d'un pays à être heureuse. Pour déterminer cela nous avons utilsé la "Life satisfaction in Cantril Ladder"
 Cette échelle allant de 0 à 10 permet de classifier les pays du monde en prenant 10 comme le maximum de bonheur et 0 comme le minimum. On peut donc considérer un pays ayant un score de 5
-comme moyennement heureux, en dessous de 5, le pays se rapproche d'un état de malheur, et, à l'inverse, en se rapprochant de 10, un pays se rapproche d'un état de bonheur.
+comme moyennement heureux, en dessous de 5, le pays se rapproche d'un état de malheur, et à l'inverse, en se rapprochant de 10, un pays se rapproche d'un état de bonheur.
+
 Avec les fichiers que nous avons choisis d'utiliser, nous pouvons montrer des corrélations entre différents critères. En exploitant les graphiques du premier onglet de notre
 dashboard, on peut tenter de définir une courbe des tendances entre la variable étudiée et la variable principale que nous utilisons : la satisfaction de vie (le bonheur dans un pays).
-Nous pouvons ainsi montrer que la bonheur dans un pays est impacté par plusieurs critères. Il est fortement impacté négativement par le nombre d'heures de travail et est faiblement impacté
-positivement par la liberté économique du pays. Il est fortement impacté par l'espérance de vie moyenne dans un pays. On voit ensuite que l'indice de développement humain est fortement corrélé
-au niveau de bonheur. On en déduit donc que le PIB par habitant, l'espérance de vie à la naissance et le niveau d'éducation des enfants de 17 ans et plus impactent tous fortement le niveau
-de satisfaction d'un pays. On voit aussi que le régime politique n'impact pas le niveau de satisfaction d'un pays. Enfin la consommation d'énergie d'un Etat impact peu la satisfaction
+Nous pouvons ainsi montrer que le bonheur dans un pays est impacté par plusieurs critères.
+
+Il est fortement impacté négativement par le nombre d'heures de travail et est faiblement impacté positivement par la liberté économique du pays. 
+Il est fortement impacté par l'espérance de vie moyenne dans un pays. On voit ensuite que l'indice de développement humain est fortement corrélé au niveau de bonheur. 
+On en déduit donc que le PIB par habitant, l'espérance de vie à la naissance et le niveau d'éducation des enfants de 17 ans et plus impactent tous fortement le niveau
+de satisfaction d'un pays. On voit aussi que le régime politique n'impacte pas le niveau de satisfaction d'un pays. Enfin la consommation d'énergie d'un Etat impacte peu la satisfaction
 (même si visiblement plus la consommation est élevée plus le pays est considéré comme heureux).
 
 
