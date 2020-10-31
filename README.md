@@ -40,9 +40,8 @@ on peut installer tous les packages avec la commande *pip install XXX* où XXX e
 problèmes d'installation (notamment pour geopandas qui peut causer quelques soucis), on peut utiliser la commande *conda install XXX* dans l'Anaconda Prompt.
 Si des problèmes subisistent, les diverses commandes d'installation via Anaconda peuvent être trouvées sur le site Anaconda.org .
 
-Le dashboard devrait s'ouvrir automatiquement au lancement du main.py, normalement il s'ouvrira deux fois, si le dashboard ne s'ouvre pas automatique, utiliser l'url suivante : "http://127.0.0.1:8050/"
-Le dashboard peut continuer de s'ouvrir de lui-même, ce bug n'a pas été résolu mais n'impacte pas le fonctionnement du dashboard. Si ce bug est trop impactant, il suffit de commenter
-la ligne 26 du main.py et d'ouvrir le dashboard manuellement en utilisant l'url ci-dessus.
+Le dashboard devrait s'ouvrir automatiquement au lancement du main.py, si le dashboard ne s'ouvre pas automatique, rentrer l'url suivante : "http://127.0.0.1:8050/" dans un navigateur web.
+Il est posinle que le dashboard s'ouvre plusieurs fois, ce bug n'a pas été résolu mais n'impacte pas le fonctionnement du dashboard. Si ce bug est trop impactant, il suffit de commenter la ligne 26 du main.py et d'ouvrir le dashboard manuellement en utilisant l'url ci-dessus. Normalement, si vous mancez le programme depuis un terminal avec la commande "python main.py", ce bug ne devrait pas apparaitre, il à l'air d'être lié à l'utilisation de Visual Studio Code.
 
 
 **Developper's Guide :**

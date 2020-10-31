@@ -214,7 +214,8 @@ def map(data,year,dataName):
 
     style_function = "font-size: 15px; font-weight: bold"
     cho.geojson.add_child(
-        folium.features.GeoJsonTooltip(['name'], style=style_function, labels=False))
+        folium.features.GeoJsonTooltip(['name'], style=style_function, labels=False),
+        folium.features.GeoJsonTooltip(['value'], style=style_function, labels=False))
 
     folium.LayerControl().add_to(m)
 
@@ -421,7 +422,7 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
         )
 
     @appl.callback(
-    [Output(component_id='map', component_property='figure'),
+    [Output(component_id='map', component_property='srcDoc'),
      Output(component_id='year-slider-map', component_property='marks'),
      Output(component_id='year-slider-map', component_property='min'),
      Output(component_id='year-slider-map', component_property='max')],
