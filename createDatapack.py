@@ -352,44 +352,22 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
             ]),
         ])
     ])
-    
+
     @appl.callback(
     [Output(component_id='graph', component_property='figure'),
-     Output(component_id='histo', component_property='figure'),
-     Output(component_id='map', component_property='srcDoc'),
      Output(component_id='year-slider-graph', component_property='marks'),
-     Output(component_id='year-slider-histo', component_property='marks'),
-     Output(component_id='year-slider-map', component_property='marks'),
      Output(component_id='year-slider-graph', component_property='min'),
-     Output(component_id='year-slider-histo', component_property='min'),
-     Output(component_id='year-slider-map', component_property='min'),
      Output(component_id='year-slider-graph', component_property='max'),
-     Output(component_id='year-slider-histo', component_property='max'),
-     Output(component_id='year-slider-map', component_property='max'),
      Output(component_id='TitreGraphe', component_property='children')],
-     #Pour le fonctionnement du slider, on doit le rafraîchir à chaque fois qu'on change de csv (donc les marks, min et max)
     [Input(component_id='year-slider-graph', component_property='value'),
-     Input(component_id='year-slider-histo', component_property='value'),
-     Input(component_id='year-slider-map', component_property='value'),
-     Input(component_id='variables_graph', component_property='value'),
-     Input(component_id='variables_histo', component_property='value'),
-     Input(component_id='variables_map', component_property='value')]
+     Input(component_id='variables_graph', component_property='value')]
     )
 
-    def update(input_graph,input_histo,input_map, fichcsv_graph, fichcsv_histo, fichcsv_map): 
-        
-        genI_h = filesName.index(fichcsv_histo)
-        genI_m = filesName.index(fichcsv_map)
+    def updateG(input_graph, fichcsv_graph):
+
         genI_g = filesName.index(fichcsv_graph)
-
         data_graph = datag[genI_g]
-        data_histo = datag[genI_h]
-        data_map   = datag[genI_m]
-
-        map(data_map,input_map,dataCol[genI_m])
-        
         datagen = mergeData(filesName, datag, "happiness-cantril-ladder.csv",filesName[genI_g],["Code","Year","Entity"])
-
 
         try:
             datagen = continent(datagen)
@@ -399,63 +377,96 @@ def dashBoard(dataf, dataO, years, fig, filesName, datag, dataCol, coloured=None
         diffyearsgen_g = uniqueYear(datagen, 'Year')
         diffyearsgen_g.sort()
         dico = createDataDic(datagen, diffyearsgen_g, 'Year')
-
-        diffyearsgen = uniqueYear(data_histo, 'Year')
-        diffyearsgen.sort()
-
         years_graph = uniqueYear(datagen)
-        years_histo = uniqueYear(data_histo)
-        years_map = uniqueYear(data_map)
-
-        mm_graph = (years_graph[0],years_graph[-1])
-        mm_histo = (years_histo[0],years_histo[-1])
-        mm_map = (years_map[0],years_map[-1])
-
         dico_graph = {int(i) : str(i) for i in years_graph}
-        dico_histo = {int(i) : str(i) for i in years_histo}
-        dico_map = {int(i) : str(i) for i in years_map}
 
         min_g = min(years_graph)
-        min_h = min(years_histo)
-        min_m = min(years_map)
-
         if min_g < 1980:
             min_g = 1980
-        if min_h < 1980:
-            min_h = 1980
-        if min_m < 1980:
-            min_m = 1980
-
         max_g = max(years_graph)
-        max_h = max(years_histo)
-        max_m = max(years_map)
 
         return (
                 px.scatter(dico[input_graph], x=dico[input_graph][dataCol[filesName.index("happiness-cantril-ladder.csv")]], y=dico[input_graph][dataCol[genI_g]], #data[input_graph]
                         color=dico[input_graph][coloured],
                         hover_name=dico[input_graph][hover])
                 ,
-                px.histogram(data_histo[data_histo['Year']==input_histo], x = dataCol[genI_h])
-                ,
-                open('map.html','r').read()
-                ,
                 dico_graph
-                ,
-                dico_histo
-                ,
-                dico_map
                 ,
                 min_g
                 ,
-                min_h
-                ,
-                min_m
-                ,
                 max_g
-                ,
-                max_h
-                ,
-                max_m #Les trois maxima
                 ,
                 f'Life Satisfaction vs {dataCol[genI_g]}' #Pour rafraîchir le titre du graphe
         )
+
+    @appl.callback(
+    [Output(component_id='histo', component_property='figure'),
+     Output(component_id='year-slider-histo', component_property='marks'),
+     Output(component_id='year-slider-histo', component_property='min'),
+     Output(component_id='year-slider-histo', component_property='max')],
+    [Input(component_id='year-slider-histo', component_property='value'),
+     Input(component_id='variables_histo', component_property='value')]
+    )
+
+    def updateH(input_histo, fichcsv_histo):
+
+        genI_h = filesName.index(fichcsv_histo)
+        data_histo = datag[genI_h]
+
+        years_histo = uniqueYear(data_histo)
+        dico_histo = {int(i) : str(i) for i in years_histo}
+
+        min_h = min(years_histo)
+        if min_h < 1980:
+            min_h = 1980
+        max_h = max(years_histo)
+
+        return (
+                px.histogram(data_histo[data_histo['Year']==input_histo], x = dataCol[genI_h])
+                ,
+                dico_histo
+                ,
+                min_h
+                ,
+                max_h
+        )
+
+    @appl.callback(
+    [Output(component_id='map', component_property='figure'),
+     Output(component_id='year-slider-map', component_property='marks'),
+     Output(component_id='year-slider-map', component_property='min'),
+     Output(component_id='year-slider-map', component_property='max')],
+    [Input(component_id='year-slider-map', component_property='value'),
+     Input(component_id='variables_map', component_property='value')]
+    )
+
+    def updateM(input_map, fichcsv_map):
+
+        genI_m = filesName.index(fichcsv_map)
+        data_map = datag[genI_m]
+
+        map(data_map,input_map,dataCol[genI_m])
+
+        years_map = uniqueYear(data_map)
+        dico_map = {int(i) : str(i) for i in years_map}
+
+        min_m = min(years_map)
+        if min_m < 1980:
+            min_m = 1980
+        max_m = max(years_map)
+
+        return (
+                open('map.html','r').read()
+                ,
+                dico_map
+                ,
+                min_m
+                ,
+                max_m
+        )
+
+
+
+
+
+
